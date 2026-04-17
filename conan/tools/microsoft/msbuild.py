@@ -8,14 +8,7 @@ def msbuild_verbosity_cmd_line_arg(conanfile):
     See https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference
     :return:
     """
-    verbosity = conanfile.conf.get("tools.build:verbosity", choices=("quiet", "verbose"))
-    if verbosity is not None:
-        verbosity = {
-            "quiet": "Quiet",
-            "verbose": "Detailed",
-        }.get(verbosity)
-        return f'-verbosity:{verbosity}'
-    return ""
+    pass
 
 
 class MSBuild:
@@ -49,25 +42,7 @@ class MSBuild:
         :param targets: ``targets`` is an optional argument, defaults to ``None``, and otherwise it is a list of targets to build
         :return: ``str`` msbuild command line.
         """
-        # TODO: Enable output_binary_log via config
-        cmd = ('msbuild.exe "%s" -p:Configuration="%s" -p:Platform="%s"'
-               % (sln, self.build_type, self.platform))
-
-        verbosity = msbuild_verbosity_cmd_line_arg(self._conanfile)
-        if verbosity:
-            cmd += " {}".format(verbosity)
-
-        maxcpucount = self._conanfile.conf.get("tools.microsoft.msbuild:max_cpu_count",
-                                               check_type=int)
-        if maxcpucount is not None:
-            cmd += f' -m:"{maxcpucount}"' if maxcpucount > 0 else " -m"
-
-        if targets:
-            if not isinstance(targets, list):
-                raise ConanException("targets argument should be a list")
-            cmd += ' -target:"{}"'.format(";".join(targets))
-
-        return cmd
+        pass
 
     def build(self, sln, targets=None):
         """
@@ -76,10 +51,8 @@ class MSBuild:
         :param sln: ``str`` name of Visual Studio ``*.sln`` file
         :param targets: ``targets`` is an optional argument, defaults to ``None``, and otherwise it is a list of targets to build
         """
-        cmd = self.command(sln, targets=targets)
-        self._conanfile.run(cmd)
+        pass
 
     @staticmethod
     def get_version(_):
-        return NotImplementedError("get_version() method is not supported in MSBuild "
-                                   "toolchain helper")
+        pass

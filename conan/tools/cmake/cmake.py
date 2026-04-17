@@ -9,31 +9,7 @@ from conan.errors import ConanException
 
 
 def _cmake_cmd_line_args(conanfile, generator):
-    args = []
-    if not generator:
-        return args
-
-    # Arguments related to parallel
-    njobs = build_jobs(conanfile)
-    if njobs and ("Makefiles" in generator or "Ninja" in generator) and "NMake" not in generator:
-        args.append("-j{}".format(njobs))
-
-    maxcpucount = conanfile.conf.get("tools.microsoft.msbuild:max_cpu_count", check_type=int)
-    if maxcpucount is not None and "Visual Studio" in generator:
-        args.append(f"/m:{maxcpucount}" if maxcpucount > 0 else "/m")
-
-    # Arguments for verbosity
-    if "Visual Studio" in generator:
-        verbosity = msbuild_verbosity_cmd_line_arg(conanfile)
-        if verbosity:
-            # trying to avoid issues with powershell and - : characters preceded by --
-            # -verbosity -> /verbosity
-            # https://github.com/PowerShell/PowerShell/issues/17399
-            if conanfile.conf.get("tools.env.virtualenv:powershell"):
-                verbosity = verbosity.replace('-', '/', 1)
-            args.append(verbosity)
-
-    return args
+    pass
 
 
 class CMake:
@@ -58,7 +34,7 @@ class CMake:
 
     @property
     def is_multi_configuration(self):
-        return is_multi_configuration(self._generator)
+        pass
 
     def configure(self, variables=None, build_script_folder=None, cli_args=None,
                   stdout=None, stderr=None, subfolder=None):
@@ -89,98 +65,16 @@ class CMake:
         :param stdout: Use it to redirect stdout to this stream
         :param stderr: Use it to redirect stderr to this stream
         """
-        self._conanfile.output.info("Running CMake.configure()")
-        cmakelist_folder = self._conanfile.source_folder
-        if build_script_folder:
-            cmakelist_folder = os.path.join(self._conanfile.source_folder, build_script_folder)
-        cmakelist_folder = cmakelist_folder.replace("\\", "/")
-
-        build_folder = self._conanfile.build_folder
-        if subfolder:
-            build_folder = os.path.join(self._conanfile.build_folder, subfolder)
-        mkdir(self._conanfile, build_folder)
-
-        arg_list = [self._cmake_program]
-        if self._generator:
-            arg_list.append('-G "{}"'.format(self._generator))
-        if self._toolchain_file:
-            toolpath = self._toolchain_file
-            if subfolder:
-                toolpath = os.path.relpath(self._toolchain_file, start=subfolder)
-            toolpath = toolpath.replace("\\", "/")
-            arg_list.append('-DCMAKE_TOOLCHAIN_FILE="{}"'.format(toolpath))
-        if self._conanfile.package_folder:
-            pkg_folder = self._conanfile.package_folder.replace("\\", "/")
-            arg_list.append('-DCMAKE_INSTALL_PREFIX="{}"'.format(pkg_folder))
-
-        if not variables:
-            variables = {}
-        self._cache_variables.update(variables)
-
-        arg_list.extend(['-D{}="{}"'.format(k, v) for k, v in self._cache_variables.items()])
-
-        arg_list.append('"{}"'.format(cmakelist_folder))
-
-        extra_args = self._conanfile.conf.get("tools.cmake:configure_args", check_type=list,
-                                              default=[])
-        arg_list.extend(extra_args)
-
-        if not cli_args or ("--log-level" not in cli_args and "--loglevel" not in cli_args):
-            arg_list.extend(self._cmake_log_levels_args)
-
-        if cli_args:
-            arg_list.extend(cli_args)
-
-        command = " ".join(arg_list)
-        with chdir(self, build_folder):
-            self._conanfile.run(command, stdout=stdout, stderr=stderr)
+        pass
 
     def _config_arg(self, build_type):
         """ computes the '--config Release' arg when necessary, or warn or error if wrong
         """
-        is_multi = is_multi_configuration(self._generator)
-        if build_type and not is_multi:
-            self._conanfile.output.error("Don't specify 'build_type' at build time for "
-                                         "single-config build systems")
-        if not build_type:
-            try:
-                build_type = self._conanfile.settings.build_type  # declared, but can be None
-                if not build_type:
-                    raise ConanException("CMake: build_type setting should be defined.")
-            except ConanException:
-                if is_multi:
-                    raise ConanException("CMake: build_type setting should be defined.")
-        build_config = "--config {}".format(build_type) if build_type and is_multi else ""
-        return build_config
+        pass
 
     def _build(self, build_type=None, target=None, cli_args=None, build_tool_args=None, env="",
                stdout=None, stderr=None, subfolder=None):
-        bf = self._conanfile.build_folder
-        if subfolder:
-            bf = os.path.join(self._conanfile.build_folder, subfolder)
-        build_config = self._config_arg(build_type)
-
-        args = []
-        if target is not None:
-            target_list = [target] if isinstance(target, str) else target
-            args.extend(["--target"] + target_list)
-
-        if cli_args:
-            args.extend(cli_args)
-
-        cmd_line_args = _cmake_cmd_line_args(self._conanfile, self._generator)
-        if build_tool_args:
-            cmd_line_args.extend(build_tool_args)
-
-        args.extend(self._compilation_verbosity_arg)
-
-        if cmd_line_args:
-            args += ['--'] + cmd_line_args
-
-        arg_list = ['"{}"'.format(bf), build_config, cmd_args_to_string(args)]
-        arg_list = " ".join(filter(None, arg_list))
-        command = "%s --build %s" % (self._cmake_program, arg_list)
-        self._conanfile.run(command, env=env, stdout=stdout, stderr=stderr)
+        pass
 
     def build(self, build_type=None, target=None, cli_args=None, build_tool_args=None,
               stdout=None, stderr=None, subfolder=None):
@@ -203,9 +97,7 @@ class CMake:
         :param stdout: Use it to redirect stdout to this stream
         :param stderr: Use it to redirect stderr to this stream
         """
-        self._conanfile.output.info("Running CMake.build()")
-        self._build(build_type, target, cli_args, build_tool_args, subfolder=subfolder,
-                    stdout=stdout, stderr=stderr)
+        pass
 
     def install(self, build_type=None, component=None, cli_args=None, stdout=None, stderr=None,
                 subfolder=None):
@@ -225,45 +117,7 @@ class CMake:
         :param stdout: Use it to redirect stdout to this stream
         :param stderr: Use it to redirect stderr to this stream
         """
-        self._conanfile.output.info("Running CMake.install()")
-        package_folder = self._conanfile.package_folder
-        build_folder = self._conanfile.build_folder
-        if subfolder:
-            package_folder = os.path.join(self._conanfile.package_folder, subfolder)
-            build_folder = os.path.join(self._conanfile.build_folder, subfolder)
-        mkdir(self._conanfile, package_folder)
-
-        build_config = self._config_arg(build_type)
-
-        pkg_folder = '"{}"'.format(package_folder.replace("\\", "/"))
-        build_folder = '"{}"'.format(build_folder.replace("\\", "/"))
-        arg_list = ["--install", build_folder, build_config, "--prefix", pkg_folder]
-        if component:
-            arg_list.extend(["--component", component])
-        arg_list.extend(self._compilation_verbosity_arg)
-
-        deprecated_install_strip = self._conanfile.conf.get("tools.cmake:install_strip",
-                                                            check_type=bool)
-        if deprecated_install_strip:
-            self._conanfile.output.warning("The 'tools.cmake:install_strip' configuration is "
-                                           "deprecated, use 'tools.build:install_strip' instead.",
-                                           warn_tag="deprecated")
-
-        try:
-            do_strip = self._conanfile.conf.get("tools.build:install_strip", check_type=bool)
-        except ConanException:
-            do_strip = "cmake" in self._conanfile.conf.get("tools.build:install_strip", check_type=list)
-        if do_strip or deprecated_install_strip:
-            arg_list.append("--strip")
-
-        if cli_args:
-            if "--install" in cli_args:
-                raise ConanException("Do not pass '--install' argument to 'install()'")
-            arg_list.extend(cli_args)
-
-        arg_list = " ".join(filter(None, arg_list))
-        command = "%s %s" % (self._cmake_program, arg_list)
-        self._conanfile.run(command, stdout=stdout, stderr=stderr)
+        pass
 
     def test(self, build_type=None, target=None, cli_args=None, build_tool_args=None, env="",
              stdout=None, stderr=None):
@@ -281,18 +135,7 @@ class CMake:
         :param stdout: Use it to redirect stdout to this stream
         :param stderr: Use it to redirect stderr to this stream
         """
-        if self._conanfile.conf.get("tools.build:skip_test", check_type=bool):
-            return
-        if not target:
-            is_multi = is_multi_configuration(self._generator)
-            is_ninja = "Ninja" in self._generator
-            target = "RUN_TESTS" if is_multi and not is_ninja else "test"
-
-        # CTest behavior controlled by CTEST_ env-vars should be directly defined in [buildenv]
-        # The default for ``test()`` is both the buildenv and the runenv
-        env = ["conanbuild", "conanrun"] if env == "" else env
-        self._build(build_type=build_type, target=target, cli_args=cli_args,
-                    build_tool_args=build_tool_args, env=env, stdout=stdout, stderr=stderr)
+        pass
 
     def ctest(self, cli_args=None, env="", stdout=None, stderr=None):
         """
@@ -304,36 +147,7 @@ class CMake:
         :param stdout: Use it to redirect stdout to this stream
         :param stderr: Use it to redirect stderr to this stream
         """
-        if self._conanfile.conf.get("tools.build:skip_test", check_type=bool):
-            return
-
-        arg_list = []
-        bt = self._conanfile.settings.get_safe("build_type")
-        is_multi = is_multi_configuration(self._generator)
-        if bt and is_multi:
-            arg_list.append(f"--build-config {bt}")
-        njobs = build_jobs(self._conanfile)
-        if njobs:
-            arg_list.append(f"--parallel {njobs}")
-
-        arg_list.extend(cli_args or [])
-
-        verbosity = self._conanfile.conf.get("tools.build:verbosity", choices=("quiet", "verbose"))
-        if verbosity:
-            # https://cmake.org/cmake/help/latest/manual/ctest.1.html
-            # Options such as --verbose, --extra-verbose, and --debug are
-            # ignored if --quiet is specified.
-            arg_list.append(f"--{verbosity}")
-
-        extra_args = self._conanfile.conf.get("tools.cmake:ctest_args", check_type=list)
-        if extra_args:
-            arg_list.extend(extra_args)
-
-        arg_list = " ".join(filter(None, arg_list))
-        command = f"ctest {arg_list}"
-
-        env = ["conanbuild", "conanrun"] if env == "" else env
-        self._conanfile.run(command, env=env, stdout=stdout, stderr=stderr)
+        pass
 
     @property
     def _compilation_verbosity_arg(self):
@@ -341,9 +155,7 @@ class CMake:
         Controls build tool verbosity, that is, those controlled by -DCMAKE_VERBOSE_MAKEFILE
         See https://cmake.org/cmake/help/latest/manual/cmake.1.html#cmdoption-cmake-build-v
         """
-        verbosity = self._conanfile.conf.get("tools.compilation:verbosity",
-                                             choices=("quiet", "verbose"))
-        return ["--verbose"] if verbosity == "verbose" else []
+        pass
 
     @property
     def _cmake_log_levels_args(self):
@@ -352,7 +164,4 @@ class CMake:
         See https://cmake.org/cmake/help/latest/manual/cmake.1.html#cmdoption-cmake-log-level
         :return:
         """
-        log_level = self._conanfile.conf.get("tools.build:verbosity", choices=("quiet", "verbose"))
-        if log_level == "quiet":
-            log_level = "error"
-        return ["--loglevel=" + log_level.upper()] if log_level is not None else []
+        pass

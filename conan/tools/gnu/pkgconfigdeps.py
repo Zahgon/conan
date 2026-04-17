@@ -46,63 +46,13 @@ class _PCFilesDeps:
         self._suffix = suffix
 
     def _get_aliases(self, dep, pkg_name=None, comp_ref_name=None):
-        def _get_dep_aliases():
-            pkg_aliases = self._get_property("pkg_config_aliases", dep, check_type=list)
-            return pkg_aliases or []
-
-        # TODO: LET'S DEPRECATE ALL THE ALIASES MECHANISM!!
-        if pkg_name is None and comp_ref_name is None:
-            return _get_dep_aliases()
-        if comp_ref_name not in dep.cpp_info.components:
-            # Either foo::foo might be referencing the root cpp_info
-            if (dep.ref.name == comp_ref_name or
-                # Or a "replace_require" is used and cpp_info.requires is the root one, e.g.,
-                # zlib/*: zlib-ng/*, and self.cpp_info.requires = ["zlib::zlib"]
-                (dep.ref.name != pkg_name and pkg_name == comp_ref_name)):
-                return _get_dep_aliases()
-            raise ConanException("Component '{name}::{cname}' not found in '{name}' "
-                                 "package requirement".format(name=dep.ref.name,
-                                                              cname=comp_ref_name))
-        comp_aliases = self._get_property("pkg_config_aliases", dep, comp_ref_name, check_type=list)
-        return comp_aliases or []
+        pass
 
     def _get_name(self, dep, pkg_name=None, comp_ref_name=None):
-        def _get_dep_name():
-            dep_name = self._get_property("pkg_config_name", dep) or dep.ref.name
-            return f"{dep_name}{self._suffix}"
-
-        if pkg_name is None and comp_ref_name is None:
-            return _get_dep_name()
-        if comp_ref_name not in dep.cpp_info.components:
-            # Either foo::foo might be referencing the root cpp_info
-            if (dep.ref.name == comp_ref_name or
-                # Or a "replace_require" is used and cpp_info.requires is the root one, e.g.,
-                # zlib/*: zlib-ng/*, and self.cpp_info.requires = ["zlib::zlib"]
-                (dep.ref.name != pkg_name and pkg_name == comp_ref_name)):
-                return _get_dep_name()
-            raise ConanException("Component '{name}::{cname}' not found in '{name}' "
-                                 "package requirement".format(name=dep.ref.name,
-                                                              cname=comp_ref_name))
-        comp_name = self._get_property("pkg_config_name", dep, comp_ref_name)
-        if comp_name:
-            return f"{comp_name}{self._suffix}"
-        else:
-            dep_name = _get_dep_name()
-            # Creating a component name with namespace, e.g., dep-comp1
-            return f"{dep_name}-{comp_ref_name}"
+        pass
 
     def _get_property(self, prop, dep, comp_name=None, check_type=None):
-        dep_name = dep.ref.name
-        dep_comp = f"{str(dep_name)}::{comp_name}" if comp_name else f"{str(dep_name)}"
-        try:
-            value = self._properties[f"{dep_comp}{self._suffix}"][prop]
-            if check_type is not None and not isinstance(value, check_type):
-                raise ConanException(
-                    f'The expected type for {prop} is "{check_type.__name__}", but "{type(value).__name__}" was found')
-            return value
-        except KeyError:
-            return dep.cpp_info.get_property(prop, check_type=check_type) if not comp_name \
-                else dep.cpp_info.components[comp_name].get_property(prop, check_type=check_type)
+        pass
 
     def _get_pc_variables(self, dep, cpp_info, custom_content=None):
         """
@@ -110,64 +60,22 @@ class _PCFilesDeps:
         users (through ``pkg_config_custom_content``). This last ones will override the
         Conan defined variables.
         """
-        def apply_custom_content():
-            if isinstance(custom_content, dict):
-                pc_variables.update(custom_content)
-            elif custom_content:  # Legacy: custom content is string
-                pc_variable_pattern = re.compile("^(.*)=(.*)")
-                for line in custom_content.splitlines():
-                    match = pc_variable_pattern.match(line)
-                    if match:
-                        key, value = match.group(1).strip(), match.group(2).strip()
-                        pc_variables[key] = value
-
-        # If editable, package_folder can be None
-        prefix_path = (dep.recipe_folder if dep.package_folder is None
-                                   else dep.package_folder).replace("\\", "/")
-        pc_variables = {"prefix": prefix_path}
-        # Already formatted directories
-        pc_variables.update(self._get_formatted_dirs("libdir", cpp_info.libdirs, prefix_path))
-        pc_variables.update(self._get_formatted_dirs("includedir", cpp_info.includedirs, prefix_path))
-        pc_variables.update(self._get_formatted_dirs("bindir", cpp_info.bindirs, prefix_path))
-        # Get the custom content introduced by user and sanitize it
-        apply_custom_content()
-        return pc_variables
+        pass
 
     @staticmethod
     def _get_formatted_dirs(folder_name, folders, prefix_path_):
-        ret = {}
-        for i, directory in enumerate(folders):
-            directory = os.path.normpath(directory).replace("\\", "/")
-            if directory.startswith(prefix_path_):
-                prefix = "${prefix}/"
-                directory = os.path.relpath(directory, prefix_path_).replace("\\", "/")
-            else:
-                prefix = "" if os.path.isabs(directory) else "${prefix}/"
-            suffix = str(i) if i else ""
-            var_name = f"{folder_name}{suffix}"
-            ret[var_name] = f"{prefix}{directory}"
-        return ret
+        pass
 
     def _get_framework_flags(self, cpp_info):
         # FIXME: GnuDepsFlags used only here. Let's adapt the code and remove this dependency.
         #        self._conanfile is also used only here.
-        from conan.tools.gnu.gnudeps_flags import GnuDepsFlags
-        gnudeps_flags = GnuDepsFlags(self._conanfile, cpp_info)
-        return gnudeps_flags.frameworks + gnudeps_flags.framework_paths
+        pass
 
     def _get_lib_flags(self, libdirvars, cpp_info):
-        framework_flags = self._get_framework_flags(cpp_info)
-        libdirsflags = ['-L"${%s}"' % d for d in libdirvars]
-        system_libs = ["-l%s" % li for li in (cpp_info.libs + cpp_info.system_libs)]
-        shared_flags = cpp_info.sharedlinkflags + cpp_info.exelinkflags
-        return " ".join(libdirsflags + system_libs + shared_flags + framework_flags)
+        pass
 
     def _get_cflags(self, includedirvars, cpp_info):
-        includedirsflags = ['-I"${%s}"' % d for d in includedirvars]
-        cxxflags = [var.replace('"', '\\"') for var in cpp_info.cxxflags]
-        cflags = [var.replace('"', '\\"') for var in cpp_info.cflags]
-        defines = ["-D%s" % var.replace('"', '\\"') for var in cpp_info.defines]
-        return " ".join(includedirsflags + cxxflags + cflags + defines)
+        pass
 
     def _get_component_requirement_names(self, cpp_info):
         """
@@ -189,22 +97,7 @@ class _PCFilesDeps:
                 self.cpp_info.components["cmp"].requires = ["other::cmp1"]
         ```
         """
-        dep_ref_name = self._dep.ref.name
-        ret = []
-        for req in cpp_info.requires:
-            pkg_ref_name, comp_ref_name = req.split("::") if "::" in req else (dep_ref_name, req)
-            # For instance, dep == "hello/1.0" and req == "other::cmp1" -> hello != other
-            if dep_ref_name != pkg_ref_name:
-                try:
-                    req_conanfile = self._transitive_reqs[pkg_ref_name]
-                except KeyError:
-                    continue  # If the dependency is not in the transitive, might be skipped
-            else:  # For instance, dep == "hello/1.0" and req == "hello::cmp1" -> hello == hello
-                req_conanfile = self._dep
-            comp_name = self._get_name(req_conanfile, pkg_ref_name, comp_ref_name)
-            if comp_name not in ret:
-                ret.append(comp_name)
-        return ret
+        pass
 
     def items(self):
         """
@@ -298,14 +191,10 @@ class _PCFilesDeps:
         return pc_files.items()
 
     def _get_pc_content(self, context):
-        template = Template(self.template, trim_blocks=True, lstrip_blocks=True,
-                            undefined=StrictUndefined)
-        return template.render(context)
+        pass
 
     def _get_alias_pc_content(self, context):
-        template = Template(self.alias_template, trim_blocks=True, lstrip_blocks=True,
-                            undefined=StrictUndefined, keep_trailing_newline=True)
-        return template.render(context)
+        pass
 
 
 class PkgConfigDeps:
@@ -331,60 +220,13 @@ class PkgConfigDeps:
 
     def _get_dependencies(self):
         # Get all the dependencies
-        host_req = self._conanfile.dependencies.host
-        build_req = self._conanfile.dependencies.build  # tool_requires
-        test_req = self._conanfile.dependencies.test
-        # If self.build_context_suffix is not defined, the build requires will be saved
-        # in the self.build_context_folder
-        # FIXME: Conan 3.x: Remove build_context_suffix attribute and the validation function
-        if self.build_context_folder is None:  # Legacy flow
-            if self.build_context_suffix:
-                # deprecation warning
-                self._conanfile.output.warning(
-                    "PkgConfigDeps.build_context_suffix attribute has been "
-                    "deprecated. Use PkgConfigDeps.build_context_folder instead."
-                )
-            # Check if it exists both as require and as build require without a suffix
-            activated_br = {r.ref.name for r in build_req.values()
-                            if r.ref.name in self.build_context_activated}
-            common_names = {r.ref.name for r in host_req.values()}.intersection(activated_br)
-            without_suffixes = [common_name for common_name in common_names
-                                if not self.build_context_suffix.get(common_name)]
-            if without_suffixes:
-                raise ConanException(
-                    f"The packages {without_suffixes} exist both as 'require' and as"
-                    f" 'build require'. You need to specify a suffix using the "
-                    f"'build_context_suffix' attribute at the PkgConfigDeps generator.")
-        elif self.build_context_folder is not None and self.build_context_suffix:
-            raise ConanException(
-                "It's not allowed to define both PkgConfigDeps.build_context_folder "
-                "and PkgConfigDeps.build_context_suffix (deprecated).")
-
-        for require, dep in list(host_req.items()) + list(build_req.items()) + list(test_req.items()):
-            # Filter the build_requires not activated with PkgConfigDeps.build_context_activated
-            if require.build and dep.ref.name not in self.build_context_activated:
-                continue
-            yield require, dep
+        pass
 
     def generate(self):
         """
         Save all the `*.pc` files
         """
-        def _pc_file_name(name_, is_build_context=False, has_suffix=False):
-            # If no suffix is defined, we can save the *.pc file in the build_context_folder
-            build = is_build_context and self.build_context_folder and not has_suffix
-            # Issue: https://github.com/conan-io/conan/issues/12342
-            # Issue: https://github.com/conan-io/conan/issues/14935
-            return f"{self.build_context_folder}/{name_}.pc" if build else f"{name_}.pc"
-
-        check_duplicated_generator(self, self._conanfile)
-        for require, dep in self._get_dependencies():
-            suffix = self.build_context_suffix.get(require.ref.name, "") if require.build else ""
-            # Save all the *.pc files and their contents
-            for name, content in _PCFilesDeps(self, dep, suffix=suffix).items():
-                pc_name = _pc_file_name(name, is_build_context=require.build,
-                                        has_suffix=bool(suffix))
-                save(pc_name, content)
+        pass
 
     def set_property(self, dep, prop, value):
         """
@@ -398,4 +240,4 @@ class PkgConfigDeps:
         :param value: Value of the property. Use ``None`` to invalidate any value set by the
          upstream recipe.
         """
-        self._properties.setdefault(dep, {}).update({prop: value})
+        pass

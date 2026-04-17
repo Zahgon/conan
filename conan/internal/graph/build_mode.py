@@ -66,68 +66,18 @@ class BuildMode:
     @property
     def editable(self):
         # we can make this conditional on the context in the future
-        return self._editable
+        pass
 
     def forced(self, conan_file, ref, with_deps_to_build=False):
         # TODO: ref can be obtained from conan_file
 
-        for pattern in self._excluded_patterns:
-            if ref_matches(ref, pattern, is_consumer=conan_file._conan_is_consumer):  # noqa
-                conan_file.output.info("Excluded build from source")
-                return False
-
-        if conan_file.build_policy == "never":  # this package has been export-pkg
-            return False
-
-        if self._never:
-            return False
-
-        if conan_file.build_policy == "always":
-            raise ConanException("{}: build_policy='always' has been removed. "
-                                 "Please use 'missing' only".format(conan_file))
-
-        if self.cascade and with_deps_to_build:
-            return True
-
-        # Patterns to match, if package matches pattern, build is forced
-        for pattern in self._patterns:
-            if ref_matches(ref, pattern, is_consumer=conan_file._conan_is_consumer):  # noqa
-                return True
-        return False
+        pass
 
     def allowed(self, conan_file):
-        if self._never or conan_file.build_policy == "never":  # this package has been export-pkg
-            return False
-        if self._missing:
-            return True
-        if conan_file.build_policy == "missing":
-            conan_file.output.info("Building package from source as defined by "
-                                   "build_policy='missing'")
-            return True
-        if self.should_build_missing(conan_file):
-            return True
-        if self.allowed_compatible(conan_file):
-            return True
-        return False
+        pass
 
     def allowed_compatible(self, conanfile):
-        if self._build_compatible_excluded:
-            for pattern in self._build_compatible_excluded:
-                if ref_matches(conanfile.ref, pattern, is_consumer=False):
-                    return False
-            return True  # If it has not been excluded by the negated patterns, it is included
-
-        for pattern in self._build_compatible_patterns:
-            if ref_matches(conanfile.ref, pattern, is_consumer=conanfile._conan_is_consumer):  # noqa
-                return True
+        pass
 
     def should_build_missing(self, conanfile):
-        if self._build_missing_excluded:
-            for pattern in self._build_missing_excluded:
-                if ref_matches(conanfile.ref, pattern, is_consumer=False):
-                    return False
-            return True  # If it has not been excluded by the negated patterns, it is included
-
-        for pattern in self._build_missing_patterns:
-            if ref_matches(conanfile.ref, pattern, is_consumer=conanfile._conan_is_consumer):  # noqa
-                return True
+        pass

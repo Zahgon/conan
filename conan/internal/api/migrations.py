@@ -20,19 +20,7 @@ def update_file(file_path, new_content):
     :param file_path: ``str`` path to the file.
     :param new_content: ``str`` content to be saved.
     """
-    out = ConanOutput()
-    file_name = os.path.basename(file_path)
-
-    if not os.path.exists(file_path):
-        save(file_path, new_content)
-    else:
-        content = load(file_path)
-
-        first_line = content.lstrip().split("\n", 1)[0]
-
-        if CONAN_GENERATED_COMMENT in first_line and content != new_content:
-            save(file_path, new_content)
-            out.success(f"Migration: Successfully updated {file_name}")
+    pass
 
 
 CONAN_VERSION = "version.txt"
@@ -47,34 +35,13 @@ class Migrator:
         self.file_version_path = os.path.join(self.conf_path, CONAN_VERSION)
 
     def migrate(self):
-        try:
-            old_version = self._load_old_version()
-            if old_version is None or old_version < self.current_version:
-                self._apply_migrations(old_version)
-                self._update_version_file()
-            elif self.current_version < old_version:  # backwards migrations
-                ConanOutput().warning(f"Downgrading cache from Conan {old_version} to "
-                                      f"{self.current_version}")
-                self._apply_back_migrations()
-                self._update_version_file()
-        except Exception as e:
-            ConanOutput().error(str(e), error_type="exception")
-            raise ConanMigrationError(e)
+        pass
 
     def _update_version_file(self):
-        try:
-            save(self.file_version_path, str(self.current_version))
-        except Exception as error:
-            raise ConanException("Can't write version file in '{}': {}"
-                                 .format(self.file_version_path, str(error)))
+        pass
 
     def _load_old_version(self):
-        try:
-            tmp = load(self.file_version_path)
-            old_version = Version(tmp)
-        except Exception:
-            old_version = None
-        return old_version
+        pass
 
     def _apply_migrations(self, old_version):
         """
@@ -85,33 +52,7 @@ class Migrator:
         pass
 
     def _apply_back_migrations(self):
-        migrations = os.path.join(self.conf_path, "migrations")
-        if not os.path.exists(migrations):
-            return
-
-        # Order by versions, and filter only newer than the current version
-        migration_files = []
-        for f in os.listdir(migrations):
-            if not f.endswith(".py"):
-                continue
-            version, remain = f.split("_", 1)
-            version = Version(version)
-            if version > conan_version:
-                migration_files.append((version, remain))
-        migration_files = [f"{v}_{r}" for (v, r) in reversed(sorted(migration_files))]
-
-        for migration in migration_files:
-            ConanOutput().warning(f"Applying downgrade migration {migration}")
-            migration = os.path.join(migrations, migration)
-            try:
-                migrate_module, _ = load_python_file(migration)
-                migrate_method = migrate_module.migrate
-                migrate_method(self.conf_path)
-            except Exception as e:
-                ConanOutput().error(f"There was an error running downgrade migration: {e}. "
-                                    f"Recommended to remove the cache and start from scratch",
-                                    error_type="exception")
-            os.remove(migration)
+        pass
 
 
 class ClientMigrator(Migrator):
@@ -124,28 +65,9 @@ class ClientMigrator(Migrator):
         # Migrate the settings if they were the default for that version
         # Time for migrations!
         # Update settings.yml
-        migrate_settings_file(self.cache_folder)
-        # Update compatibility.py, app_compat.py, and cppstd_compat.py.
-        from conan.internal.graph.compatibility import migrate_compatibility_files
-        migrate_compatibility_files(self.cache_folder)
-        # Update profile plugin
-        from conan.internal.api.profile.profile_loader import migrate_profile_plugin
-        migrate_profile_plugin(self.cache_folder)
-
-        # let the back migration files be stored
-        # if there was not a previous install (old_version==None)
-        if old_version is None or old_version < "2.4":
-            _migrate_default_compatibility(self.cache_folder)
+        pass
 
 
 def _migrate_default_compatibility(cache_folder):
     # just the back migration
-    undo = textwrap.dedent("""\
-        import os
-
-        def migrate(home_folder):
-            from conans.client.graph.compatibility import migrate_compatibility_files
-            migrate_compatibility_files(home_folder)
-        """)
-    path = os.path.join(cache_folder, "migrations", "2.4_1-migrate.py")
-    save(path, undo)
+    pass

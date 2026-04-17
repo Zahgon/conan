@@ -131,106 +131,43 @@ class ConanFile:
         self.layouts = Layouts()
 
     def serialize(self):
-        result = {}
-
-        for a in ("name", "user", "channel", "url", "license",
-                  "author", "description", "homepage", "build_policy", "upload_policy",
-                  "revision_mode", "provides", "deprecated", "win_bash", "win_bash_run",
-                  "default_options", "options_description"):
-            v = getattr(self, a, None)
-            result[a] = v
-
-        result["version"] = str(self.version) if self.version is not None else None
-        result["topics"] = list(self.topics) if self.topics is not None else None
-        result["package_type"] = str(self.package_type)
-        result["languages"] = self.languages
-
-        settings = self.settings
-        if settings is not None:
-            result["settings"] = settings.serialize() if isinstance(settings, Settings) else list(settings)
-
-        result["options"] = self.options.serialize()
-        result["options_definitions"] = self.options.possible_values
-
-        if self.generators is not None:
-            result["generators"] = list(s.__name__ if isinstance(s, type) else s
-                                        for s in self.generators)
-        if self.license is not None:
-            result["license"] = list(self.license) if not isinstance(self.license, str) else self.license
-
-        result["requires"] = self.requires.serialize()
-
-        if hasattr(self, "python_requires"):
-            result["python_requires"] = self.python_requires.serialize()
-        else:
-            result["python_requires"] = None
-        result["system_requires"] = self.system_requires
-
-        result["recipe_folder"] = self.recipe_folder
-        result["source_folder"] = self.source_folder
-        result["build_folder"] = self.build_folder
-        result["generators_folder"] = self.generators_folder
-        result["package_folder"] = self.package_folder
-        result["immutable_package_folder"] = self.immutable_package_folder
-
-        result["cpp_info"] = self.cpp_info.serialize()
-        result["conf_info"] = self.conf_info.serialize()
-        result["label"] = self.display_name
-        if self.info is not None:
-            result["info"] = self.info.serialize()
-        result["vendor"] = self.vendor
-        if self.conan_data:
-            result["conandata"] = self.conan_data
-        return result
+        pass
 
     @property
     def output(self):
         # an output stream (writeln, info, warn error)
-        scope = self.display_name
-        if not scope:
-            scope = self.ref if self._conan_node else ""
-        return ConanOutput(scope=scope)
+        pass
 
     @property
     def context(self):
-        return self._conan_node.context
+        pass
 
     @property
     def subgraph(self):
-        return self._conan_node.subgraph()
+        pass
 
     @property
     def dependencies(self):
         # Caching it, this object is requested many times
-        if self._conan_dependencies is None:
-            self._conan_dependencies = ConanFileDependencies.from_node(self._conan_node)
-        return self._conan_dependencies
+        pass
 
     @property
     def ref(self):
-        return self._conan_node.ref
+        pass
 
     @property
     def pref(self):
-        return self._conan_node.pref
+        pass
 
     @property
     def buildenv(self):
         # Lazy computation of the package buildenv based on the profileone
-        from conan.tools.env import Environment
-        if not isinstance(self._conan_buildenv, Environment):
-            self._conan_buildenv = self._conan_buildenv.get_profile_env(self.ref,
-                                                                        self._conan_is_consumer)
-        return self._conan_buildenv
+        pass
 
     @property
     def runenv(self):
         # Lazy computation of the package runenv based on the profile one
-        from conan.tools.env import Environment
-        if not isinstance(self._conan_runenv, Environment):
-            self._conan_runenv = self._conan_runenv.get_profile_env(self.ref,
-                                                                    self._conan_is_consumer)
-        return self._conan_runenv
+        pass
 
     @property
     def cpp_info(self):
@@ -238,11 +175,11 @@ class ConanFile:
         Same as using ``self.cpp.package`` in the ``layout()`` method. Use it if you need to read
         the ``package_folder`` to locate the already located artifacts.
         """
-        return self.cpp.package
+        pass
 
     @cpp_info.setter
     def cpp_info(self, value):
-        self.cpp.package = value
+        pass
 
     @property
     def source_folder(self):
@@ -253,14 +190,11 @@ class ConanFile:
 
         :return: A string with the path to the source folder.
         """
-        return self.folders.source_folder
+        pass
 
     @property
     def source_path(self) -> Path:
-        self.output.warning(f"Use of 'source_path' is deprecated, please use 'source_folder' instead",
-                            warn_tag="deprecated")
-        assert self.source_folder is not None, "`source_folder` is `None`"
-        return Path(self.source_folder)
+        pass
 
     @property
     def export_sources_folder(self):
@@ -275,26 +209,19 @@ class ConanFile:
 
         :return: A string with the mentioned path.
         """
-        return self.folders.base_export_sources
+        pass
 
     @property
     def export_sources_path(self) -> Path:
-        self.output.warning(f"Use of 'export_sources_path' is deprecated, please use "
-                            f"'export_sources_folder' instead", warn_tag="deprecated")
-        assert self.export_sources_folder is not None, "`export_sources_folder` is `None`"
-        return Path(self.export_sources_folder)
+        pass
 
     @property
     def export_folder(self):
-        return self.folders.base_export
+        pass
 
     @property
     def export_path(self) -> Path:
-        self.output.warning(f"Use of 'export_path' is deprecated, please use 'export_folder' instead",
-                            warn_tag="deprecated")
-
-        assert self.export_folder is not None, "`export_folder` is `None`"
-        return Path(self.export_folder)
+        pass
 
     @property
     def build_folder(self):
@@ -305,22 +232,19 @@ class ConanFile:
 
         :return: A string with the path to the build folder.
         """
-        return self.folders.build_folder
+        pass
 
     @property
     def recipe_metadata_folder(self):
-        return self.folders.recipe_metadata_folder
+        pass
 
     @property
     def package_metadata_folder(self):
-        return self.folders.package_metadata_folder
+        pass
 
     @property
     def build_path(self) -> Path:
-        self.output.warning(f"Use of 'build_path' is deprecated, please use 'build_folder' instead",
-                            warn_tag="deprecated")
-        assert self.build_folder is not None, "`build_folder` is `None`"
-        return Path(self.build_folder)
+        pass
 
     @property
     def package_folder(self):
@@ -330,30 +254,23 @@ class ConanFile:
 
         :return: A string with the path to the package folder.
         """
-        return self.folders.base_package
+        pass
 
     @property
     def immutable_package_folder(self):
-        return self.folders.immutable_package_folder
+        pass
 
     @property
     def generators_folder(self):
-        return self.folders.generators_folder
+        pass
 
     @property
     def package_path(self) -> Path:
-        self.output.warning(f"Use of 'package_path' is deprecated, please use 'package_folder' instead",
-                            warn_tag="deprecated")
-
-        assert self.package_folder is not None, "`package_folder` is `None`"
-        return Path(self.package_folder)
+        pass
 
     @property
     def generators_path(self) -> Path:
-        self.output.warning(f"Use of 'generators_path' is deprecated, please use "
-                            f"'generators_folder' instead", warn_tag="deprecated")
-        assert self.generators_folder is not None, "`generators_folder` is `None`"
-        return Path(self.generators_folder)
+        pass
 
     def run(self, command: str, stdout=None, cwd=None, ignore_errors=False, env="", quiet=False,
             shell=True, scope="build", stderr=None):
@@ -376,38 +293,10 @@ class ConanFile:
             underlying ``Popen`` function.
         :parameter scope: The scope of the command, either ``"build"`` or ``"run"``.
         """
-        # NOTE: "self.win_bash" is the new parameter "win_bash" for Conan 2.0
-        command = self._conan_helpers.cmd_wrapper.wrap(command, conanfile=self)
-        if env == "":  # This default allows not breaking for users with ``env=None`` indicating
-            # they don't want any env-file applied
-            env = "conanbuild" if scope == "build" else "conanrun"
-
-        env = [env] if env and isinstance(env, str) else (env or [])
-        assert isinstance(env, list), "env argument to ConanFile.run() should be a list"
-        envfiles_folder = self.generators_folder or os.getcwd()
-        wrapped_cmd = command_env_wrapper(self, command, env, envfiles_folder=envfiles_folder,
-                                          scope=scope)
-        from conan.internal.util.runners import conan_run
-        if not quiet:
-            ConanOutput().info(f"{self.display_name}: RUN: {command}", fg=Color.BRIGHT_BLUE)
-        ConanOutput().debug(f"{self.display_name}: Full command: {wrapped_cmd}")
-        if quiet or ConanOutput.get_output_level() == LEVEL_QUIET:
-            stdout = subprocess.DEVNULL if stdout is None else stdout
-            stderr = subprocess.DEVNULL if stderr is None else stderr
-        retcode = conan_run(wrapped_cmd, cwd=cwd, stdout=stdout, stderr=stderr, shell=shell)
-        if not quiet:
-            ConanOutput().writeln("")
-
-        if not ignore_errors and retcode != 0:
-            raise ConanException("Error %d while executing" % retcode)
-
-        return retcode
+        pass
 
     def __repr__(self):
         return self.display_name
 
     def set_deploy_folder(self, deploy_folder):
-        self.cpp_info.deploy_base_folder(self.package_folder, deploy_folder)
-        self.buildenv_info.deploy_base_folder(self.package_folder, deploy_folder)
-        self.runenv_info.deploy_base_folder(self.package_folder, deploy_folder)
-        self.folders.set_base_package(deploy_folder)
+        pass

@@ -22,25 +22,11 @@ from conan.internal.util.files import rmdir
 
 
 def _get_pip_verbosity():
-    return {
-        LEVEL_QUIET: "-qqq",
-        LEVEL_ERROR: "-qq",
-        LEVEL_WARNING: "-q",
-        LEVEL_VERBOSE: "-v",
-        LEVEL_DEBUG: "-vv",
-        LEVEL_TRACE: "-vvv",
-    }.get(ConanOutput.get_output_level(), "")
+    pass
 
 
 def _get_uv_verbosity():
-    return {
-        LEVEL_QUIET: "-qq",
-        LEVEL_ERROR: "-qq",
-        LEVEL_WARNING: "-q",
-        LEVEL_VERBOSE: "--verbose",
-        LEVEL_DEBUG: "--verbose",
-        LEVEL_TRACE: "--verbose",
-    }.get(ConanOutput.get_output_level(), "")
+    pass
 
 
 class PyEnv:
@@ -88,34 +74,30 @@ class PyEnv:
     @property
     def env_dir(self):
         """Root directory of the virtual environment."""
-        return self._env_dir.replace("\\", "/")
+        pass
 
     @property
     def env_exe(self):
         """Path to the Python executable inside the virtual environment."""
-        return self._get_env_python(self._env_dir).replace("\\", "/")
+        pass
 
     @property
     def bin_path(self):
         """Path to the bin or Scripts directory inside the virtual environment."""
-        bins = "Scripts" if platform.system() == "Windows" else "bin"
-        return os.path.join(self._env_dir, bins).replace("\\", "/")
+        pass
 
     @staticmethod
     def _get_env_python(env_dir):
-        _env_bin_dir = os.path.join(env_dir, "Scripts" if platform.system() == "Windows" else "bin")
-        return os.path.join(_env_bin_dir, "python.exe" if platform.system() == "Windows" else "python")
+        pass
 
     def generate(self):
         """
         Create a conan environment to use the python venv in the next steps of the conanfile.
         """
-        env = Environment()
-        env.prepend_path("PATH", self.bin_path)
-        env.vars(self._conanfile).save_script(self._env_name)
+        pass
 
     def run(self, args):
-        return self._conanfile.run(cmd_args_to_string([self.env_exe] + list(args)))
+        pass
 
     def install(self, packages, pip_args=None):
         """
@@ -127,58 +109,13 @@ class PyEnv:
                          Defaults to ``None``.
         :return: the return code of the executed pip command.
         """
-        args = [self.env_exe, "-m", "pip", "install", "--disable-pip-version-check"]
-        pip_verbosity = _get_pip_verbosity()
-        if pip_verbosity:
-            args.append(pip_verbosity)
-        if pip_args:
-            args.extend(pip_args)
-        args += [f'"{p}"' for p in packages]
-        command = " ".join(args)
-        return self._conanfile.run(command)
+        pass
 
     def _create_venv(self):
-        try:
-            self._conanfile.run(cmd_args_to_string([self._default_python, '-m', 'venv',
-                                                    self._env_dir]))
-        except ConanException as e:
-            raise ConanException(f"PyEnv could not create a Python virtual "
-                                 f"environment using '{self._default_python}': {e}")
+        pass
 
     def _create_uv_venv(self, base_env_dir, py_version):
-        uv_env_dir = None
-        try:
-            uv_path = shutil.which("uv")
-            if uv_path:
-                uv_cmd = [uv_path]
-            else:
-                uv_env_dir = os.path.join(base_env_dir, f"uv_{self._env_name}")
-                self._conanfile.run(cmd_args_to_string(
-                    [self._default_python, '-m', 'venv', uv_env_dir])
-                )
-
-                python_exe = self._get_env_python(uv_env_dir)
-                pip_args = [python_exe, "-m", "pip", "install", "--disable-pip-version-check"]
-                pip_verbosity = _get_pip_verbosity()
-                if pip_verbosity:
-                    pip_args.append(pip_verbosity)
-                pip_args.append("uv")
-                self._conanfile.run(cmd_args_to_string(pip_args))
-                uv_cmd = [python_exe, "-m", "uv"]
-
-            uv_venv_args = uv_cmd + ['venv', '--seed', '--python', py_version, self._env_dir]
-            uv_verbosity = _get_uv_verbosity()
-            if uv_verbosity:
-                uv_venv_args.append(uv_verbosity)
-            self._conanfile.run(cmd_args_to_string(uv_venv_args))
-            self._conanfile.output.info(f"Virtual environment for Python "
-                                        f"{py_version} created successfully using UV.")
-        except Exception as e:
-            raise ConanException(f"PyEnv could not create a Python {py_version} virtual "
-                                 f"environment using UV and '{self._default_python}': {e}")
-        finally:
-            if uv_env_dir:
-                rmdir(uv_env_dir)
+        pass
 
 
 class PipEnv(PyEnv):

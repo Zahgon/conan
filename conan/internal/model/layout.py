@@ -20,9 +20,7 @@ class PartialLayout:
         self.conf_info = Conf()
 
     def set_relative_base_folder(self, folder):
-        self.buildenv_info.set_relative_base_folder(folder)
-        self.runenv_info.set_relative_base_folder(folder)
-        self.conf_info.set_relative_base_folder(folder)
+        pass
 
 
 class Layouts:
@@ -71,104 +69,80 @@ class Folders:
         @param output_folder: Can potentially be None (for export-pkg: TODO), in that case
         the conanfile location is used
         """
-        # This must be called only after ``layout()`` has been called
-        base_folder = conanfile_folder if self.root is None else \
-            os.path.normpath(os.path.join(conanfile_folder, self.root))
-
-        self._base_source = base_folder
-        self._base_build = output_folder or base_folder
-        self._base_generators = output_folder or base_folder
-        self._base_export_sources = output_folder or base_folder
-        self._base_recipe_metadata = os.path.join(base_folder, "metadata")
-        # TODO: It is likely that this base_pkg_metadata is not really used with this value
-        self._base_pkg_metadata = output_folder or base_folder
+        pass
 
     @property
     def source_folder(self):
-        if self._base_source is None:
-            return None
-        if not self.source:
-            return os.path.normpath(self._base_source)
-
-        return os.path.normpath(os.path.join(self._base_source, self.source))
+        pass
 
     @property
     def base_source(self):
-        return self._base_source
+        pass
 
     def set_base_source(self, folder):
-        self._base_source = folder
+        pass
 
     @property
     def build_folder(self):
-        if self._base_build is None:
-            return None
-        if not self.build:
-            return os.path.normpath(self._base_build)
-        return os.path.normpath(os.path.join(self._base_build, self.build))
+        pass
 
     @property
     def recipe_metadata_folder(self):
-        return self._base_recipe_metadata
+        pass
 
     def set_base_recipe_metadata(self, folder):
-        self._base_recipe_metadata = folder
+        pass
 
     @property
     def package_metadata_folder(self):
-        return self._base_pkg_metadata
+        pass
 
     def set_base_pkg_metadata(self, folder):
-        self._base_pkg_metadata = folder
+        pass
 
     @property
     def base_build(self):
-        return self._base_build
+        pass
 
     def set_base_build(self, folder):
-        self._base_build = folder
+        pass
 
     @property
     def base_package(self):
-        return self._base_package
+        pass
 
     def set_base_package(self, folder):
-        self._base_package = folder
+        pass
 
     @property
     def package_folder(self):
         """For the cache, the package folder is only the base"""
-        return self._base_package
+        pass
 
     def set_finalize_folder(self, folder):
-        self._immutable_package_folder = self.package_folder
-        self.set_base_package(folder)
+        pass
 
     @property
     def immutable_package_folder(self):
-        return self._immutable_package_folder or self.package_folder
+        pass
 
     @property
     def generators_folder(self):
-        if self._base_generators is None:
-            return None
-        if not self.generators:
-            return os.path.normpath(self._base_generators)
-        return os.path.normpath(os.path.join(self._base_generators, self.generators))
+        pass
 
     def set_base_generators(self, folder):
-        self._base_generators = folder
+        pass
 
     @property
     def base_export(self):
-        return self._base_export
+        pass
 
     def set_base_export(self, folder):
-        self._base_export = folder
+        pass
 
     @property
     def base_export_sources(self):
-        return self._base_export_sources
+        pass
 
     def set_base_export_sources(self, folder):
-        self._base_export_sources = folder
+        pass

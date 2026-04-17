@@ -38,59 +38,23 @@ class GnuDepsFlags:
 
     @staticmethod
     def _format_defines(defines):
-        return ["-D%s" % define for define in defines] if defines else []
+        pass
 
     def _format_frameworks(self, frameworks, is_path=False):
         """
         returns an appropriate compiler flags to link with Apple Frameworks
         or an empty array, if Apple Frameworks aren't supported by the given compiler
         """
-        os_ = self._conanfile.settings.get_safe("os")
-        if not frameworks or not is_apple_os(self._conanfile):
-            return []
-        compiler = self._conanfile.settings.get_safe("compiler")
-        if str(compiler) not in self._GCC_LIKE:
-            return []
-        if is_path:
-            return ["-F\"%s\"" % self._adjust_path(framework_path) for framework_path in frameworks]
-        else:
-            return ["-framework %s" % framework for framework in frameworks]
+        pass
 
     def _format_include_paths(self, include_paths):
-        if not include_paths:
-            return []
-        pattern = "/I%s" if is_msvc(self._conanfile) else "-I%s"
-        return [pattern % (self._adjust_path(include_path))
-                for include_path in include_paths if include_path]
+        pass
 
     def _format_library_paths(self, library_paths):
-        if not library_paths:
-            return []
-        pattern = "/LIBPATH:%s" if is_msvc(self._conanfile) else "-L%s"
-        return [pattern % self._adjust_path(library_path)
-                for library_path in library_paths if library_path]
+        pass
 
     def _format_libraries(self, libraries):
-        if not libraries:
-            return []
-
-        result = []
-
-        is_visual = is_msvc(self._conanfile)
-        for library in libraries:
-            if is_visual:
-                if not library.endswith(".lib"):
-                    library += ".lib"
-                result.append(library)
-            else:
-                result.append("-l%s" % library)
-        return result
+        pass
 
     def _adjust_path(self, path):
-        if is_msvc(self._conanfile):
-            path = path.replace('/', '\\')
-        else:
-            path = path.replace('\\', '/')
-
-        path = subsystem_path(self._subsystem, path)
-        return '"%s"' % path if ' ' in path else path
+        pass

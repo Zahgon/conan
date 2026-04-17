@@ -28,133 +28,132 @@ class ConanFileInterface:
 
     @property
     def options(self):
-        return self._conanfile.options
+        pass
 
     @property
     def recipe_folder(self):
-        return self._conanfile.recipe_folder
+        pass
 
     @property
     def recipe_metadata_folder(self):
-        return self._conanfile.recipe_metadata_folder
+        pass
 
     @property
     def package_folder(self):
-        return self._conanfile.package_folder
+        pass
 
     @property
     def immutable_package_folder(self):
-        return self._conanfile.immutable_package_folder
+        pass
 
     @property
     def package_metadata_folder(self):
-        return self._conanfile.package_metadata_folder
+        pass
 
     @property
     def package_path(self) -> Path:
-        assert self.package_folder is not None, "`package_folder` is `None`"
-        return Path(self.package_folder)
+        pass
 
     @property
     def ref(self):
-        return self._conanfile.ref
+        pass
 
     @property
     def pref(self):
-        return self._conanfile.pref
+        pass
 
     @property
     def buildenv_info(self):
-        return self._conanfile.buildenv_info
+        pass
 
     @property
     def runenv_info(self):
-        return self._conanfile.runenv_info
+        pass
 
     @property
     def cpp_info(self):
-        return self._conanfile.cpp_info
+        pass
 
     @property
     def settings(self):
-        return self._conanfile.settings
+        pass
 
     @property
     def settings_build(self):
-        return self._conanfile.settings_build
+        pass
 
     @property
     def context(self):
-        return self._conanfile.context
+        pass
 
     @property
     def conf_info(self):
-        return self._conanfile.conf_info
+        pass
 
     @property
     def generator_info(self):
-        return self._conanfile.generator_info
+        pass
 
     @property
     def dependencies(self):
-        return self._conanfile.dependencies
+        pass
 
     @property
     def folders(self):
-        return self._conanfile.folders
+        pass
 
     @property
     def is_build_context(self):
-        return self._conanfile.context == CONTEXT_BUILD
+        pass
 
     @property
     def package_type(self):
-        return self._conanfile.package_type
+        pass
 
     @property
     def languages(self):
-        return self._conanfile.languages
+        pass
 
     @property
     def info(self):
-        return self._conanfile.info
+        pass
 
     def set_deploy_folder(self, deploy_folder):
-        self._conanfile.set_deploy_folder(deploy_folder)
+        pass
 
     @property
     def conan_data(self):
-        return self._conanfile.conan_data
+        pass
 
     @property
     def license(self):
-        return self._conanfile.license
+        pass
 
     @property
     def description(self):
-        return self._conanfile.description
+        pass
 
     @property
     def author(self):
-        return self._conanfile.author
+        pass
 
     @property
     def homepage(self):
-        return self._conanfile.homepage
+        pass
 
     @property
     def url(self):
-        return self._conanfile.url
+        pass
 
     @property
     def extension_properties(self):
-        return getattr(self._conanfile, "extension_properties", {})
+        pass
 
     @property
     def recipe(self) -> str:
         # IMPORTANT: this should be used only for "informational" purposes, see GH#18996.
-        return self._conanfile._conan_node.recipe
+        pass
 
     @property
     def conf(self):
-        return self._conanfile.conf
+        pass

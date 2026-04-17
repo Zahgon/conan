@@ -375,231 +375,42 @@ class MesonToolchain:
             - https://github.com/conan-io/conan/issues/9713
             - https://github.com/conan-io/conan/issues/11596
         """
-        def _get_cpp_info_value(name):
-            elements = getattr(self._conanfile.cpp.package, name)
-            return elements[0] if elements else None
-
-        ret = {}
-        bindir = _get_cpp_info_value("bindirs")
-        datadir = _get_cpp_info_value("resdirs")
-        libdir = _get_cpp_info_value("libdirs")
-        includedir = _get_cpp_info_value("includedirs")
-        if bindir:
-            ret.update({
-                'bindir': bindir,
-                'sbindir': bindir,
-                'libexecdir': bindir
-            })
-        if datadir:
-            ret.update({
-                'datadir': datadir,
-                'localedir': datadir,
-                'mandir': datadir,
-                'infodir': datadir
-            })
-        if includedir:
-            ret["includedir"] = includedir
-        if libdir:
-            ret["libdir"] = libdir
-        return ret
+        pass
 
     def _resolve_apple_flags_and_variables(self, build_env, compilers_by_conf):
-        if not self._is_apple_system:
-            return
-        # Calculating the main Apple flags
-        min_flag, arch_flag, isysroot_flag = (
-            resolve_apple_flags(self._conanfile, is_cross_building=self.cross_build))
-        self.apple_arch_flag = arch_flag.split() if arch_flag else []
-        self.apple_isysroot_flag = isysroot_flag.split() if isysroot_flag else []
-        self.apple_min_version_flag = [apple_min_version_flag(self._conanfile)]
-        # Objective C/C++ ones
-        self.objc = compilers_by_conf.get("objc", "clang")
-        self.objcpp = compilers_by_conf.get("objcpp", "clang++")
-        enable_arc = self._conanfile.conf.get("tools.apple:enable_arc", check_type=bool)
-        fobj_arc = ""
-        if enable_arc:
-            fobj_arc = "-fobjc-arc"
-        if enable_arc is False:
-            fobj_arc = "-fno-objc-arc"
-        self.objc_args = self._get_env_list(build_env.get('OBJCFLAGS', [])) + [fobj_arc]
-        self.objc_link_args = self._get_env_list(build_env.get('LDFLAGS', []))
-        self.objcpp_args = self._get_env_list(build_env.get('OBJCXXFLAGS', [])) + [fobj_arc]
-        self.objcpp_link_args = self._get_env_list(build_env.get('LDFLAGS', []))
+        pass
 
     def _resolve_android_cross_compilation(self):
-        if not self.cross_build or not self.cross_build["host"]["system"] == "android":
-            return
-
-        ndk_path = self._conanfile_conf.get("tools.android:ndk_path")
-        if not ndk_path:
-            raise ConanException("You must provide a NDK path. Use 'tools.android:ndk_path' "
-                                 "configuration field.")
-
-        arch = self._conanfile.settings.get_safe("arch")
-        os_build = self.cross_build["build"]["system"]
-        ndk_bin = os.path.join(ndk_path, "toolchains",
-                               "llvm", "prebuilt", "{}-x86_64".format(os_build), "bin")
-        android_api_level = self._conanfile.settings.get_safe("os.api_level")
-        android_target = {'armv7': 'armv7a-linux-androideabi',
-                          'armv8': 'aarch64-linux-android',
-                          'x86': 'i686-linux-android',
-                          'x86_64': 'x86_64-linux-android'}.get(arch)
-        os_build = self._conanfile.settings_build.get_safe('os')
-        compile_ext = ".cmd" if os_build == "Windows" else ""
-        # User has more prio than Conan
-        self.c = os.path.join(ndk_bin, f"{android_target}{android_api_level}-clang{compile_ext}")
-        self.cpp = os.path.join(ndk_bin, f"{android_target}{android_api_level}-clang++{compile_ext}")
-        self.ar = os.path.join(ndk_bin, "llvm-ar")
+        pass
     
     @property
     def _rpath_link_flag(self):
-        add_rpath_link = self._conanfile.conf.get("tools.build:add_rpath_link", check_type=bool)
-        if not add_rpath_link:
-            return []
-        runtime_dirs = []
-        host_req = self._conanfile.dependencies.filter({"build": False}).values()
-        for req in host_req:
-            cppinfo = req.cpp_info.aggregated_components()
-            runtime_dirs.extend(cppinfo.libdirs)
-        return ["-Wl,-rpath-link=" + ":".join(runtime_dirs)] if runtime_dirs else []
+        pass
     
     def _get_extra_flags(self):
         # Now, it's time to get all the flags defined by the user
-        cxxflags = self._conanfile_conf.get("tools.build:cxxflags", default=[], check_type=list)
-        cflags = self._conanfile_conf.get("tools.build:cflags", default=[], check_type=list)
-        sharedlinkflags = self._conanfile_conf.get("tools.build:sharedlinkflags", default=[],
-                                                   check_type=list)
-        exelinkflags = self._conanfile_conf.get("tools.build:exelinkflags", default=[],
-                                                check_type=list)
-        linker_scripts = self._conanfile_conf.get("tools.build:linker_scripts", default=[],
-                                                  check_type=list)
-        linker_script_flags = ['-T' + linker_script for linker_script in linker_scripts]
-        defines = self._conanfile_conf.get("tools.build:defines", default=[], check_type=list)
-        sys_root = [f"--sysroot={self._sys_root}"] if self._sys_root else [""]
-        ld = (sharedlinkflags + exelinkflags + linker_script_flags + sys_root + self.extra_ldflags
-              + self.threads_flags)
-        # Apple extra flags from confs (visibilty, bitcode, arc)
-        cxxflags += self.apple_extra_flags
-        cflags += self.apple_extra_flags
-        ld += self.apple_extra_flags
-        return {
-            "cxxflags": [self.arch_flag] + cxxflags + sys_root + self.extra_cxxflags
-                        + self.threads_flags,
-            "cflags": [self.arch_flag] + cflags + sys_root + self.extra_cflags + self.threads_flags,
-            "ldflags": [self.arch_flag] + [self.arch_link_flag] + ld + self._rpath_link_flag,
-            "defines": [f"-D{d}" for d in (defines + self.extra_defines)]
-        }
+        pass
 
     @staticmethod
     def _get_env_list(v):
         # FIXME: Should Environment have the "check_type=None" keyword as Conf?
-        return v.strip().split() if not isinstance(v, list) else v
+        pass
 
     @staticmethod
     def _filter_list_empty_fields(v):
-        return list(filter(bool, v))
+        pass
 
     @staticmethod
     def _sanitize_env_format(value):
-        if value is None or isinstance(value, list):
-            return value
-        if not isinstance(value, str):
-            raise ConanException(f"MesonToolchain: Value '{value}' should be a string")
-        ret = [x.strip() for x in value.split() if x]
-        return ret[0] if len(ret) == 1 else ret
+        pass
 
     @property
     def _context(self):
-        apple_flags = self.apple_isysroot_flag + self.apple_arch_flag + self.apple_min_version_flag
-        extra_flags = self._get_extra_flags()
-
-        self.c_args.extend(apple_flags + extra_flags["cflags"] + extra_flags["defines"])
-        self.cpp_args.extend(apple_flags + extra_flags["cxxflags"] + extra_flags["defines"])
-        self.c_link_args.extend(apple_flags + extra_flags["ldflags"])
-        self.cpp_link_args.extend(apple_flags + extra_flags["ldflags"])
-        # Objective C/C++
-        self.objc_args.extend(self.c_args)
-        self.objcpp_args.extend(self.cpp_args)
-        # These link_args have already the LDFLAGS env value so let's add only the new possible ones
-        self.objc_link_args.extend(self.c_link_args)
-        self.objcpp_link_args.extend(self.cpp_link_args)
-
-        if self.preprocessor_definitions:
-            self._conanfile.output.warning(
-                "Use 'extra_defines' attribute for compiler preprocessor definitions instead " +
-                "of 'preprocessor_definitions'", warn_tag="deprecated")
-
-        if self.libcxx:
-            self.cpp_args.append(self.libcxx)
-            self.cpp_link_args.append(self.libcxx)
-        if self.gcc_cxx11_abi:
-            self.cpp_args.append("-D{}".format(self.gcc_cxx11_abi))
-
-        subproject_options = {}
-        for subproject, listkeypair in self.subproject_options.items():
-            if listkeypair:
-                if not isinstance(listkeypair, list):
-                    raise ConanException("MesonToolchain.subproject_options must be a list of dicts")
-                subproject_options[subproject] = [{k: to_meson_value(v) for k, v in keypair.items()}
-                                                  for keypair in listkeypair]
-        return {
-            # https://mesonbuild.com/Machine-files.html#properties
-            "properties": {k: to_meson_value(v) for k, v in self.properties.items()},
-            # https://mesonbuild.com/Machine-files.html#project-specific-options
-            "project_options": {k: to_meson_value(v) for k, v in self.project_options.items()},
-            # https://mesonbuild.com/Subprojects.html#build-options-in-subproject
-            "subproject_options": subproject_options.items(),
-            # https://mesonbuild.com/Builtin-options.html#directories
-            # https://mesonbuild.com/Machine-files.html#binaries
-            # https://mesonbuild.com/Reference-tables.html#compiler-and-linker-selection-variables
-            "c": to_meson_value(self.c),
-            "cpp": to_meson_value(self.cpp),
-            "ld": to_meson_value(self.ld),
-            "objc": self.objc,
-            "objcpp": self.objcpp,
-            "c_ld": self.c_ld,
-            "cpp_ld": self.cpp_ld,
-            "ar": self.ar,
-            "strip": self.strip,
-            "as": self.as_,
-            "windres": self.windres,
-            "pkgconfig": self.pkgconfig,
-            # https://mesonbuild.com/Builtin-options.html#core-options
-            "buildtype": self.buildtype,
-            "default_library": self.default_library,
-            "backend": self._conanfile_conf.get("tools.meson.mesontoolchain:backend",
-                                                default=self.backend),
-            # https://mesonbuild.com/Builtin-options.html#base-options
-            "b_vscrt": self.b_vscrt,
-            "b_staticpic": to_meson_value(self.b_staticpic),  # boolean
-            "b_ndebug": to_meson_value(self.b_ndebug),  # boolean as string
-            # https://mesonbuild.com/Builtin-options.html#compiler-options
-            "cpp_std": self.cpp_std,
-            "c_std": self.c_std,
-            "c_args": to_meson_value(self._filter_list_empty_fields(self.c_args)),
-            "c_link_args": to_meson_value(self._filter_list_empty_fields(self.c_link_args)),
-            "cpp_args": to_meson_value(self._filter_list_empty_fields(self.cpp_args)),
-            "cpp_link_args": to_meson_value(self._filter_list_empty_fields(self.cpp_link_args)),
-            "objc_args": to_meson_value(self._filter_list_empty_fields(self.objc_args)),
-            "objc_link_args": to_meson_value(self._filter_list_empty_fields(self.objc_link_args)),
-            "objcpp_args": to_meson_value(self._filter_list_empty_fields(self.objcpp_args)),
-            "objcpp_link_args": to_meson_value(self._filter_list_empty_fields(self.objcpp_link_args)),
-            "pkg_config_path": self.pkg_config_path,
-            "build_pkg_config_path": self.build_pkg_config_path,
-            #: Deprecated: Dict-like object that defines Meson ``preprocessor definitions``. Use the extra_defines attribute instead.
-            "preprocessor_definitions": self.preprocessor_definitions,
-            "cross_build": self.cross_build,
-            "is_apple_system": self._is_apple_system
-        }
+        pass
 
     @property
     def _filename(self):
-        if self.cross_build and self._native:
-            return self.native_filename
-        elif self.cross_build:
-            return self.cross_filename
-        else:
-            return self.native_filename
+        pass
 
     @property
     def _content(self):
@@ -608,10 +419,7 @@ class MesonToolchain:
 
         :return: ``str`` whole Meson context content.
         """
-        context = self._context
-        content = Template(self._meson_file_template, trim_blocks=True, lstrip_blocks=True,
-                           undefined=StrictUndefined).render(context)
-        return content
+        pass
 
     def generate(self):
         """
@@ -619,8 +427,4 @@ class MesonToolchain:
         ``conan_meson_cross.ini`` (if cross builds) with the proper content.
         If Windows OS, it will be created a ``conanvcvars.bat`` as well.
         """
-        check_duplicated_generator(self, self._conanfile)
-        self._conanfile.output.info(f"MesonToolchain generated: {self._filename}")
-        save(self._filename, self._content)
-        # FIXME: Should we check the OS and compiler to call VCVars?
-        VCVars(self._conanfile).generate()
+        pass

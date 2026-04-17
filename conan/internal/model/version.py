@@ -17,7 +17,7 @@ class _VersionItem:
 
     @property
     def value(self):
-        return self._v
+        pass
 
     def __str__(self):
         return str(self._v)
@@ -89,69 +89,38 @@ class Version:
 
         :param index:
         """
-        # this method is used to compute version ranges from tilde ~1.2 and caret ^1.2.1 ranges
-        # TODO: at this moment it only works for digits, cannot increment pre-release or builds
-        # better not make it public yet, keep it internal
-        items = list(self._items[:index])
-        try:
-            items.append(self._items[index]+1)
-        except TypeError:
-            raise ConanException(f"Cannot bump '{self._value} version index {index}, not an int")
-        items.extend([0] * (len(items) - index - 1))
-        v = ".".join(str(i) for i in items)
-        # prerelease and build are dropped while bumping digits
-        return Version(v)
+        pass
 
     def upper_bound(self, index):
-        items = list(self._items[:index])
-        try:
-            items.append(self._items[index] + 1)
-        except TypeError:
-            raise ConanException(f"Cannot bump '{self._value} version index {index}, not an int")
-        items.extend([0] * (len(items) - index - 1))
-        v = ".".join(str(i) for i in items)
-        v += "-"  # Exclude prereleases
-        return Version(v)
+        pass
 
     @property
     def pre(self):
-        return self._pre
+        pass
 
     @property
     def build(self):
-        return self._build
+        pass
 
     @property
     def main(self):
-        return self._items
+        pass
 
     @property
     def major(self):
-        try:
-            return self.main[0]
-        except IndexError:
-            return None
+        pass
 
     @property
     def minor(self):
-        try:
-            return self.main[1]
-        except IndexError:
-            return None
+        pass
 
     @property
     def patch(self):
-        try:
-            return self.main[2]
-        except IndexError:
-            return None
+        pass
 
     @property
     def micro(self):
-        try:
-            return self.main[3]
-        except IndexError:
-            return None
+        pass
 
     def __str__(self):
         return self._value
@@ -197,5 +166,4 @@ class Version:
 
     def in_range(self, version_range: str, resolve_prerelease: Optional[bool] = None):
         """ Check if the version is in the specified range """
-        from conan.internal.model.version_range import VersionRange
-        return VersionRange(version_range).contains(self, resolve_prerelease=resolve_prerelease)
+        pass

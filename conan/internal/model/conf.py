@@ -177,7 +177,7 @@ USER_CONF_PATTERN = re.compile(r"^(user\..+|user):.*")
 
 def _is_profile_module(module_name):
     # These are the modules that are propagated to profiles and user recipes
-    return TOOLS_CONF_PATTERN.match(module_name) or USER_CONF_PATTERN.match(module_name)
+    pass
 
 
 # FIXME: Refactor all the next classes because they are mostly the same as
@@ -198,51 +198,24 @@ class _ConfValue:
 
     @staticmethod
     def parse(name, value, path=False, update=None):
-        if name != name.lower():
-            raise ConanException("Conf '{}' must be lowercase".format(name))
-        name, important = (name[:-1], True) if name[-1] == "!" else (name, False)
-        if isinstance(value, (_PackageOption, SettingsItem)):
-            raise ConanException(f"Invalid 'conf' type, please use Python types (int, str, ...)")
-        return _ConfValue(name, value, path=path, update=update, important=important)
+        pass
 
     def __repr__(self):
         return repr(self._value)
 
     @property
     def value(self):
-        if self._value_type is list and _ConfVarPlaceHolder in self._value:
-            v = self._value[:]
-            v.remove(_ConfVarPlaceHolder)
-            return v
-        return self._value
+        pass
 
     def copy(self):
         # Using copy for when self._value is a mutable list
-        return _ConfValue(self.name, copy.copy(self._value), self._path, self._update,
-                          self._important)
+        pass
 
     def dumps(self):
-        name = f"{self.name}!" if self._important else self.name
-        if self._value is None:
-            return "{}=!".format(name)  # unset
-        elif self._value_type is list and _ConfVarPlaceHolder in self._value:
-            v = self._value[:]
-            v.remove(_ConfVarPlaceHolder)
-            return "{}={}".format(name, v)
-        else:
-            return "{}={}".format(name, self._value)
+        pass
 
     def serialize(self):
-        name = f"{self.name}!" if self._important else self.name
-        if self._value is None:
-            _value = "!"  # unset
-        elif self._value_type is list and _ConfVarPlaceHolder in self._value:
-            v = self._value[:]
-            v.remove(_ConfVarPlaceHolder)
-            _value = v
-        else:
-            _value = self._value
-        return {name: _value}
+        pass
 
     def update(self, value):
         assert self._value_type is dict, "Only dicts can be updated"
@@ -250,32 +223,13 @@ class _ConfValue:
         self._value.update(value)
 
     def remove(self, value):
-        if self._value_type is list:
-            self._value.remove(value)
-        elif self._value_type is dict:
-            self._value.pop(value, None)
+        pass
 
     def append(self, value):
-        if self._value_type is not list:
-            raise ConanException("Only list-like values can append other values.")
-
-        if isinstance(value, list):
-            self._value.extend(value)
-        else:
-            if isinstance(value, (_PackageOption, SettingsItem)):
-                raise ConanException(f"Invalid 'conf' type, please use Python types (int, str, ...)")
-            self._value.append(value)
+        pass
 
     def prepend(self, value):
-        if self._value_type is not list:
-            raise ConanException("Only list-like values can prepend other values.")
-
-        if isinstance(value, list):
-            self._value = value + self._value
-        else:
-            if isinstance(value, (_PackageOption, SettingsItem)):
-                raise ConanException(f"Invalid 'conf' type, please use Python types (int, str, ...)")
-            self._value.insert(0, value)
+        pass
 
     def compose_conf_value(self, other):
         """
@@ -283,58 +237,10 @@ class _ConfValue:
         self mandates what to do. If self has define(), without placeholder, that will remain.
         :type other: _ConfValue
         """
-        v_type = self._value_type
-        o_type = other._value_type
-
-        important = other._important and not self._important
-        if v_type is list and o_type is list:
-            # If important, we swap values to prioritize the other
-            v1, v2 = (other._value, self._value) if important else (self._value, other._value)
-            try:
-                index = v1.index(_ConfVarPlaceHolder)
-            except ValueError:  # It doesn't have placeholder
-                if important:
-                    self._value = other._value
-            else:
-                new_value = v1[:]  # do a copy
-                new_value[index:index + 1] = v2  # replace the placeholder
-                self._value = new_value
-        elif v_type is dict and o_type is dict:
-            if self._update:
-                # only if the current one is marked as "*=" update, otherwise it remains
-                # as this is a "compose" operation, self has priority, it is the one updating
-                # If important, we swap values to prioritize the other
-                v1, v2 = (other._value, self._value) if important else (self._value, other._value)
-                new_value = v2.copy()
-                new_value.update(v1)
-                self._value = new_value
-            elif important:
-                self._value = other._value
-        elif ((issubclass(v_type, numbers.Number) and issubclass(o_type, numbers.Number)) or
-              # They might be different kind of numbers, so skip the check below
-              self._value is None or other._value is None):
-            # It means any of those values were an "unset" so doing nothing because we don't
-            # really know the original value type
-            if important:
-                self._value = other._value
-                self._value_type = other._value_type
-        elif o_type != v_type:
-            raise ConanException("It's not possible to compose {} values "
-                                 "and {} ones.".format(v_type.__name__, o_type.__name__))
-        # TODO: In case of any other object types?
-        elif important:  # equal type, but just string
-            self._value = other._value
+        pass
 
     def set_relative_base_folder(self, folder):
-        if not self._path:
-            return
-        if isinstance(self._value, list):
-            self._value = [os.path.join(folder, v) if v != _ConfVarPlaceHolder else v
-                           for v in self._value]
-        if isinstance(self._value, dict):
-            self._value = {k: os.path.join(folder, v) for k, v in self._value.items()}
-        elif isinstance(self._value, str):
-            self._value = os.path.join(folder, self._value)
+        pass
 
 
 class Conf:
@@ -350,11 +256,10 @@ class Conf:
         return bool(self._values)
 
     def clear(self):
-        self._values.clear()
+        pass
 
     def validate(self):
-        for conf in self._values:
-            self._check_conf_name(conf)
+        pass
 
     def items(self):
         # FIXME: Keeping backward compatibility
@@ -415,34 +320,25 @@ class Conf:
         return value
 
     def show(self, fnpattern, pattern=""):
-        return {key: self.get(key)
-                for key in self._values.keys()
-                if fnmatch.fnmatch(pattern + key, fnpattern)}
+        pass
 
     def copy(self):
-        c = Conf()
-        c._values = {k: v.copy() for k, v in self._values.items()}
-        return c
+        pass
 
     def filter_core(self):
-        c = Conf()
-        c._values = {k: v.copy() for k, v in self._values.items() if not CORE_CONF_PATTERN.match(k)}
-        return c
+        pass
 
     def dumps(self):
         """
         Returns a string with the format ``name=conf-value``
         """
-        return "\n".join([v.dumps() for v in sorted(self._values.values(), key=lambda x: x.name)])
+        pass
 
     def serialize(self):
         """
         Returns a dict-like object, e.g., ``{"tools.xxxx": "value1"}``
         """
-        ret = {}
-        for v in self._values.values():
-            ret.update(v.serialize())
-        return ret
+        pass
 
     def define(self, name, value):
         """
@@ -451,12 +347,10 @@ class Conf:
         :param name: Name of the configuration.
         :param value: Value of the configuration.
         """
-        v = _ConfValue.parse(name, value)
-        self._values[v.name] = v
+        pass
 
     def define_path(self, name, value):
-        v = _ConfValue.parse(name, value, path=True)
-        self._values[v.name] = v
+        pass
 
     def unset(self, name):
         """
@@ -464,8 +358,7 @@ class Conf:
 
         :param name: Name of the configuration.
         """
-        v = _ConfValue.parse(name, None)
-        self._values[v.name] = v
+        pass
 
     def update(self, name, value):
         """
@@ -479,8 +372,7 @@ class Conf:
         self._values.setdefault(conf_value.name, conf_value).update(value)
 
     def update_path(self, name, value):
-        conf_value = _ConfValue.parse(name, {}, path=True, update=True)
-        self._values.setdefault(conf_value.name, conf_value).update(value)
+        pass
 
     def append(self, name, value):
         """
@@ -489,12 +381,10 @@ class Conf:
         :param name: Name of the configuration.
         :param value: Value to append.
         """
-        conf_value = _ConfValue.parse(name, [_ConfVarPlaceHolder])
-        self._values.setdefault(conf_value.name, conf_value).append(value)
+        pass
 
     def append_path(self, name, value):
-        conf_value = _ConfValue.parse(name, [_ConfVarPlaceHolder], path=True)
-        self._values.setdefault(conf_value.name, conf_value).append(value)
+        pass
 
     def prepend(self, name, value):
         """
@@ -503,12 +393,10 @@ class Conf:
         :param name: Name of the configuration.
         :param value: Value to prepend.
         """
-        conf_value = _ConfValue.parse(name, [_ConfVarPlaceHolder])
-        self._values.setdefault(conf_value.name, conf_value).prepend(value)
+        pass
 
     def prepend_path(self, name, value):
-        conf_value = _ConfValue.parse(name, [_ConfVarPlaceHolder], path=True)
-        self._values.setdefault(conf_value.name, conf_value).prepend(value)
+        pass
 
     def remove(self, name, value):
         """
@@ -517,24 +405,14 @@ class Conf:
         :param name: Name of the configuration.
         :param value: Value to remove.
         """
-        conf_value = self._values.get(name)
-        if conf_value:
-            conf_value.remove(value)
-        else:
-            raise ConanException("Conf {} does not exist.".format(name))
+        pass
 
     def compose_conf(self, other):
         """
         :param other: other has less priority than current one
         :type other: Conf
         """
-        for k, v in other._values.items():
-            existing = self._values.get(k)
-            if existing is None:
-                self._values[k] = v.copy()
-            else:
-                existing.compose_conf_value(v)
-        return self
+        pass
 
     def copy_conaninfo_conf(self):
         """
@@ -543,13 +421,13 @@ class Conf:
         suppose that we have this Conan `profile`:
 
         ```
-        ...
+        pass
         [conf]
         tools.info.package_id:confs=["tools.build:cxxflags", "tools.build:cflags"]
         tools.build:cxxflags=["flag1xx"]
         tools.build:cflags=["flag1"]
         tools.build:defines=["DEF1"]
-        ...
+        pass
 
         Then, the resulting `Conf()` will have only these configuration lines:
 
@@ -559,30 +437,14 @@ class Conf:
 
         :return: a new `< Conf object >` with the configuration selected by `tools.info.package_id:confs`.
         """
-        result = Conf()
-        # Reading the list of all the configurations selected by the user to use for the package_id
-        package_id_confs = self.get("tools.info.package_id:confs", default=[], check_type=list)
-        for conf_name in package_id_confs:
-            matching_confs = [c for c in self._values if re.match(conf_name, c)]
-            for name in matching_confs:
-                value = self.get(name)
-                # Pruning any empty values, those should not affect package ID
-                if value:
-                    result.define(name, value)
-        return result
+        pass
 
     def set_relative_base_folder(self, folder):
-        for v in self._values.values():
-            v.set_relative_base_folder(folder)
+        pass
 
     @staticmethod
     def _check_conf_name(conf):
-        if conf.startswith("user"):
-            if USER_CONF_PATTERN.match(conf) is None:
-                raise ConanException(f"User conf '{conf}' invalid format, not 'user.org.group:conf'")
-        elif conf not in BUILT_IN_CONFS:
-            raise ConanException(f"[conf] '{conf}' does not exist in configuration list. "
-                                 "Run 'conan config list' to see all the available confs.")
+        pass
 
 
 class ConfDefinition:
@@ -608,19 +470,7 @@ class ConfDefinition:
         """
         Get the value of the confs that match the requested pattern
         """
-        result = {}
-
-        for patter_key, patter_conf in self._pattern_confs.items():
-            if patter_key is None:
-                patter_key = ""
-            else:
-                patter_key += ":"
-
-            pattern_values = patter_conf.show(fnpattern, patter_key)
-            result.update({patter_key + pattern_subkey: pattern_subvalue
-                           for pattern_subkey, pattern_subvalue in pattern_values.items()})
-
-        return result
+        pass
 
     def pop(self, conf_name, default=None):
         """
@@ -631,51 +481,31 @@ class ConfDefinition:
 
     @staticmethod
     def _split_pattern_name(pattern_name):
-        if pattern_name.count(":") >= 2:
-            pattern, name = pattern_name.split(":", 1)
-        else:
-            pattern, name = None, pattern_name
-        return pattern, name
+        pass
 
     def get_conanfile_conf(self, ref, is_consumer=False):
         """ computes package-specific Conf
         it is only called when conanfile.buildenv is called
         the last one found in the profile file has top priority
         """
-        result = Conf()
-        for pattern, conf in self._pattern_confs.items():
-            if pattern is None or ref_matches(ref, pattern, is_consumer):
-                # Latest declared has priority, copy() necessary to not destroy data
-                result = conf.copy().compose_conf(result)
-        return result
+        pass
 
     def update_conf_definition(self, other):
         """
         :type other: ConfDefinition
         :param other: The argument profile has priority/precedence over the current one.
         """
-        for pattern, conf in other._pattern_confs.items():
-            self._update_conf_definition(pattern, conf)
+        pass
 
     def _update_conf_definition(self, pattern, conf):
-        existing = self._pattern_confs.get(pattern)
-        if existing:
-            self._pattern_confs[pattern] = conf.compose_conf(existing)
-        else:
-            self._pattern_confs[pattern] = conf
+        pass
 
     def rebase_conf_definition(self, global_conf):
         """
         for taking the new global.conf and composing with the profile [conf]
         :type global_conf: ConfDefinition
         """
-        result = ConfDefinition()
-        # Do not add ``core.xxx`` configuration to profiles
-        for k, v in global_conf._pattern_confs.items():
-            result._pattern_confs[k] = v.filter_core()
-        result.update_conf_definition(self)
-        self._pattern_confs = result._pattern_confs
-        return
+        pass
 
     def update(self, key, value, profile=False, method="define"):
         """
@@ -704,97 +534,27 @@ class ConfDefinition:
         self._update_conf_definition(pattern, conf)
 
     def dumps(self):
-        result = []
-        for pattern, conf in self._pattern_confs.items():
-            if pattern is None:
-                result.append(conf.dumps())
-            else:
-                result.append("\n".join("{}:{}".format(pattern, line) if line else ""
-                                        for line in conf.dumps().splitlines()))
-        if result:
-            result.append("")
-        return "\n".join(result)
+        pass
 
     def serialize(self):
-        result = {}
-        for pattern, conf in self._pattern_confs.items():
-            if pattern is None:
-                result.update(conf.serialize())
-            else:
-                for k, v in conf.serialize().items():
-                    result[f"{pattern}:{k}"] = v
-        return result
+        pass
 
     @staticmethod
     def _get_evaluated_value(_v):
         """
         Function to avoid eval() catching local variables
         """
-        try:
-            value = eval(_v)  # This destroys Windows path strings with backslash
-        except (Exception,):  # It means eval() failed because of a string without quotes
-            value = _v.strip()
-        else:
-            if not isinstance(value, (numbers.Number, bool, dict, list, set, tuple)) \
-                    and value is not None:
-                # If it is quoted string we respect it as-is
-                value = _v.strip()
-        return value
+        pass
 
     def loads(self, text, profile=False):
-        self._pattern_confs = {}
-
-        for line in text.splitlines():
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            for op, method in ConfDefinition.actions:
-                tokens = line.split(op, 1)
-                if len(tokens) != 2:
-                    continue
-                pattern_name, value = tokens
-                _, name = self._split_pattern_name(pattern_name)
-                # We only implement str type at the moment
-                isstr = _BUILT_IN_CONFS_TYPES.get(name) is str
-                parsed_value = value.strip() if isstr else ConfDefinition._get_evaluated_value(value)
-                self.update(pattern_name, parsed_value, profile=profile, method=method)
-                break
-            else:
-                raise ConanException("Bad conf definition: {}".format(line))
+        pass
 
     def validate(self):
-        for conf in self._pattern_confs.values():
-            conf.validate()
+        pass
 
     def clear(self):
-        self._pattern_confs.clear()
+        pass
 
 
 def load_global_conf(home_folder):
-    home_paths = HomePaths(home_folder)
-    global_conf_path = home_paths.global_conf_path
-    new_config = ConfDefinition()
-    if os.path.exists(global_conf_path):
-        text = load(global_conf_path)
-        distro = None
-        if platform.system() in ["Linux", "FreeBSD"]:
-            import distro
-        template = Environment(loader=FileSystemLoader(home_folder)).from_string(text)
-        home_folder = home_folder.replace("\\", "/")
-        from conan import conan_version
-        content = template.render({"platform": platform, "os": os, "distro": distro,
-                                   "conan_version": conan_version,
-                                   "conan_home_folder": home_folder,
-                                   "detect_api": detect_api,
-                                   "hashlib": hashlib})
-        new_config.loads(content)
-    else:  # creation of a blank global.conf file for user convenience
-        default_global_conf = textwrap.dedent("""\
-            # Core configuration (type 'conan config list' to list possible values)
-            # e.g, for CI systems, to raise if user input would block
-            # core:non_interactive = True
-            # some tools.xxx config also possible, though generally better in profiles
-            # tools.android:ndk_path = my/path/to/android/ndk
-            """)
-        save(global_conf_path, default_global_conf)
-    return new_config
+    pass

@@ -47,84 +47,52 @@ class XcodeToolchain:
         self._global_ldflags = sharedlinkflags + exelinkflags
 
     def generate(self):
-        check_duplicated_generator(self, self._conanfile)
-        save(self._agreggated_xconfig_filename, self._agreggated_xconfig_content)
-        save(self._vars_xconfig_filename, self._vars_xconfig_content)
-        if self._check_if_extra_flags:
-            save(self._flags_xcconfig_filename, self._flags_xcconfig_content)
-        save(GLOBAL_XCCONFIG_FILENAME, self._global_xconfig_content)
+        pass
 
     @property
     def _cppstd(self):
-        from conan.tools.build.flags import cppstd_flag
-        cppstd = cppstd_flag(self._conanfile)
-        if cppstd.startswith("-std="):
-            return cppstd[5:]
-        return cppstd
+        pass
 
     @property
     def _apple_deployment_target(self):
-        deployment_target_key = xcodebuild_deployment_target_key(self._conanfile.settings.get_safe("os"))
-        return '{}{}={}'.format(deployment_target_key,
-                                _xcconfig_conditional(self._conanfile.settings, self.configuration),
-                                self.os_version) if deployment_target_key and self.os_version else ""
+        pass
 
     @property
     def _clang_cxx_library(self):
-        return 'CLANG_CXX_LIBRARY{}={}'.format(_xcconfig_conditional(self._conanfile.settings,
-                                                                     self.configuration),
-                                               self.libcxx) if self.libcxx else ""
+        pass
 
     @property
     def _clang_cxx_language_standard(self):
-        return 'CLANG_CXX_LANGUAGE_STANDARD{}={}'.format(_xcconfig_conditional(self._conanfile.settings, self.configuration),
-                                                         self._cppstd) if self._cppstd else ""
+        pass
 
     @property
     def _vars_xconfig_filename(self):
-        return "conantoolchain{}{}".format(_xcconfig_settings_filename(self._conanfile.settings,
-                                                                       self.configuration),
-                                           self.extension)
+        pass
 
     @property
     def _vars_xconfig_content(self):
-        ret = self._vars_xconfig.format(apple_deployment_target=self._apple_deployment_target,
-                                        clang_cxx_library=self._clang_cxx_library,
-                                        clang_cxx_language_standard=self._clang_cxx_language_standard)
-        return ret
+        pass
 
     @property
     def _agreggated_xconfig_content(self):
-        return _add_includes_to_file_or_create(self._agreggated_xconfig_filename,
-                                               self._agreggated_xconfig,
-                                               [self._vars_xconfig_filename])
+        pass
 
     @property
     def _global_xconfig_content(self):
-        files_to_include = [self._agreggated_xconfig_filename]
-        if self._check_if_extra_flags:
-            files_to_include.append(self._flags_xcconfig_filename)
-        content = _add_includes_to_file_or_create(GLOBAL_XCCONFIG_FILENAME, GLOBAL_XCCONFIG_TEMPLATE,
-                                                  files_to_include)
-        return content
+        pass
 
     @property
     def _agreggated_xconfig_filename(self):
-        return self.filename + self.extension
+        pass
 
     @property
     def _check_if_extra_flags(self):
-        return self._global_cflags or self._global_cxxflags or self._global_ldflags or self._global_defines
+        pass
 
     @property
     def _flags_xcconfig_content(self):
-        defines = "GCC_PREPROCESSOR_DEFINITIONS = $(inherited) {}".format(" ".join(self._global_defines)) if self._global_defines else ""
-        cflags = "OTHER_CFLAGS = $(inherited) {}".format(" ".join(self._global_cflags)) if self._global_cflags else ""
-        cppflags = "OTHER_CPLUSPLUSFLAGS = $(inherited) {}".format(" ".join(self._global_cxxflags)) if self._global_cxxflags else ""
-        ldflags = "OTHER_LDFLAGS = $(inherited) {}".format(" ".join(self._global_ldflags)) if self._global_ldflags else ""
-        ret = self._flags_xconfig.format(defines=defines, cflags=cflags, cppflags=cppflags, ldflags=ldflags)
-        return ret
+        pass
 
     @property
     def _flags_xcconfig_filename(self):
-        return "conan_global_flags" + self.extension
+        pass

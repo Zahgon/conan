@@ -27,18 +27,4 @@ def check_min_compiler_version(conanfile, compiler_restrictions):
                 ]
                 check_min_compiler_version(self, compiler_restrictions)
     """
-    compiler_value = conanfile.settings.get_safe("compiler")
-    if not compiler_value:
-        raise ConanException("Called check_min_compiler_version with no compiler defined")
-    compiler_version = conanfile.settings.get_safe("compiler.version")
-    if not compiler_version:
-        raise ConanException("Called check_min_compiler_version with no compiler.version defined")
-
-    for compiler, min_version, reason in compiler_restrictions:
-        if compiler_value == compiler:
-            if Version(compiler_version) < Version(min_version):
-                ref = conanfile.ref if hasattr(conanfile, "ref") else conanfile.name
-                raise ConanInvalidConfiguration(
-                    f"{ref} requires {compiler} >= {min_version}, but {compiler} {compiler_version} was found\n"
-                    f"Reason: {reason}")
-            break
+    pass

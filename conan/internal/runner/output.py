@@ -8,6 +8,4 @@ class RunnerOutput(ConanOutput):
         self._prefix = f"{runner_info} | "
 
     def _write_message(self, msg, fg=None, bg=None, newline=True):
-        for line in msg.splitlines():
-            super()._write_message(self._prefix, Color.BLACK, Color.BRIGHT_YELLOW, newline=False)
-            super()._write_message(line, fg, bg, newline)
+        pass

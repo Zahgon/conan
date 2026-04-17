@@ -20,80 +20,62 @@ class RestApiClient:
 
     def _capable(self, capability):
         # Caching of capabilities per-remote
-        capabilities = getattr(self._remote, "_capabilities", None)
-        if capabilities is None:
-            tmp = RestV2Methods(self._remote_url, self._token,
-                                self._requester, self._config, self._verify_ssl)
-            capabilities = tmp.server_capabilities()
-            setattr(self._remote, "_capabilities", capabilities)
-        return capability in capabilities
+        pass
 
     def _get_api(self):
-        revisions = self._capable(REVISIONS)
-
-        if not revisions:
-            raise ConanException("The remote doesn't support revisions. "
-                                 "Conan 2.0 is no longer compatible with "
-                                 "remotes that don't accept revisions.")
-        checksum_deploy = self._capable(CHECKSUM_DEPLOY)
-        return RestV2Methods(self._remote_url, self._token,
-                             self._requester, self._config, self._verify_ssl,
-                             checksum_deploy)
+        pass
 
     def get_recipe(self, ref, dest_folder, metadata, only_metadata):
-        return self._get_api().get_recipe(ref, dest_folder, metadata, only_metadata)
+        pass
 
     def get_recipe_sources(self, ref, dest_folder):
-        return self._get_api().get_recipe_sources(ref, dest_folder)
+        pass
 
     def get_package(self, pref, dest_folder, metadata, only_metadata):
-        return self._get_api().get_package(pref, dest_folder, metadata, only_metadata)
+        pass
 
     def upload_recipe(self, ref, files_to_upload):
-        return self._get_api().upload_recipe(ref, files_to_upload)
+        pass
 
     def upload_package(self, pref, files_to_upload):
-        return self._get_api().upload_package(pref, files_to_upload)
+        pass
 
     def authenticate(self, user, password):
         # BYPASS capabilities, in case v1/ping is protected
-        api_v2 = RestV2Methods(self._remote_url, self._token,
-                               self._requester, self._config, self._verify_ssl)
-        token = api_v2.authenticate(user, password)
-        return token
+        pass
 
     def check_credentials(self, force_auth=False):
-        return self._get_api().check_credentials(force_auth)
+        pass
 
     def search(self, pattern=None, ignorecase=True):
-        return self._get_api().search(pattern, ignorecase)
+        pass
 
     def search_packages(self, reference, list_only=False):
-        return self._get_api().search_packages(reference, list_only)
+        pass
 
     def remove_recipe(self, ref):
-        return self._get_api().remove_recipe(ref)
+        pass
 
     def remove_all_packages(self, ref):
-        return self._get_api().remove_all_packages(ref)
+        pass
 
     def remove_packages(self, prefs):
-        return self._get_api().remove_packages(prefs)
+        pass
 
     def get_recipe_revisions_references(self, ref):
-        return self._get_api().get_recipe_revisions_references(ref)
+        pass
 
     def get_package_revisions_references(self, pref):
-        return self._get_api().get_package_revisions_references(pref)
+        pass
 
     def get_latest_recipe_reference(self, ref):
-        return self._get_api().get_latest_recipe_reference(ref)
+        pass
 
     def get_latest_package_reference(self, pref, headers):
-        return self._get_api().get_latest_package_reference(pref, headers=headers)
+        pass
 
     def get_recipe_revision_reference(self, ref):
-        return self._get_api().get_recipe_revision_reference(ref)
+        pass
 
     def get_package_revision_reference(self, pref):
-        return self._get_api().get_package_revision_reference(pref)
+        pass

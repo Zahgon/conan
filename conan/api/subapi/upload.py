@@ -35,17 +35,7 @@ class UploadAPI:
         :parameter force: If ``True``, it will skip the check and mark that all items need to be
             uploaded. A ``force_upload`` key will be added to the entries that will be uploaded.
         """
-        loader = self._api_helpers.loader
-        for ref, _ in package_list.items():
-            layout = self._api_helpers.cache.recipe_layout(ref)
-            conanfile_path = layout.conanfile()
-            conanfile = loader.load_basic(conanfile_path, remotes=enabled_remotes)
-            if conanfile.upload_policy == "skip":
-                ConanOutput().info(f"{ref}: Skipping upload of binaries, "
-                                   "because upload_policy='skip'")
-                package_list.recipe_dict(ref)["packages"] = {}
-
-        UploadUpstreamChecker(self._api_helpers.remote_manager).check(package_list, remote, force)
+        pass
 
     def prepare(self, package_list: PackagesList, enabled_remotes: List[Remote],
                 metadata: List[str] = None):
@@ -60,24 +50,10 @@ class UploadAPI:
             Default ``None`` means all metadata will be uploaded together with the package artifacts.
             If metadata contains an empty string (``""``),
             it means that no metadata files should be uploaded."""
-        if metadata and metadata != [''] and '' in metadata:
-            raise ConanException("Empty string and patterns can not be mixed for metadata.")
-
-        loader = self._api_helpers.loader
-        preparator = PackagePreparator(loader, self._api_helpers.cache,
-                                       self._api_helpers.remote_manager,
-                                       self._api_helpers.global_conf)
-        preparator.prepare(package_list, enabled_remotes, metadata)
-        signer = PkgSignaturesPlugin(self._api_helpers.cache, self._conan_api.home_folder)
-        if signer.is_sign_configured:
-            ConanOutput().warning("[Package sign] Implicitly signing packages in the upload "
-                                  "command has been removed. Use 'conan cache sign' command before "
-                                  "uploading instead.", warn_tag="deprecated")
+        pass
 
     def _upload(self, package_list, remote):
-        self._api_helpers.remote_manager.check_credentials(remote)
-        executor = UploadExecutor(self._api_helpers.remote_manager)
-        executor.upload(package_list, remote)
+        pass
 
     def upload_full(self, package_list: PackagesList, remote: Remote, enabled_remotes: List[Remote],
                     check_integrity=False, force=False, metadata: List[str] = None, dry_run=False):
@@ -110,38 +86,7 @@ class UploadAPI:
         :param dry_run: If ``True``, it will not perform the actual upload,
             but will still prepare the artifacts and check the upstream.
         """
-
-        def _upload_pkglist(pkglist, subtitle=lambda _: None):
-            if check_integrity:
-                subtitle("Checking integrity of cache packages")
-                self._conan_api.cache.check_integrity(pkglist)
-            # Check if the recipes/packages are in the remote
-            subtitle("Checking server for existing packages")
-            self.check_upstream(pkglist, remote, enabled_remotes, force)
-            subtitle("Preparing artifacts for upload")
-            self.prepare(pkglist, enabled_remotes, metadata)
-
-            if not dry_run:
-                subtitle("Uploading artifacts")
-                self._upload(pkglist, remote)
-                backup_files = self._conan_api.cache.get_backup_sources(pkglist)
-                self.upload_backup_sources(backup_files)
-
-        t = time.time()
-        ConanOutput().title(f"Uploading to remote {remote.name}")
-        parallel = self._conan_api.config.get("core.upload:parallel", default=1, check_type=int)
-        thread_pool = ThreadPool(parallel) if parallel > 1 else None
-        if not thread_pool or len(package_list._data) <= 1:  # FIXME: Iteration when multiple rrevs
-            _upload_pkglist(package_list, subtitle=ConanOutput().subtitle)
-        else:
-            ConanOutput().subtitle(f"Uploading with {parallel} parallel threads")
-            thread_pool.map(_upload_pkglist, package_list.split())
-        if thread_pool:
-            thread_pool.close()
-            thread_pool.join()
-        elapsed = time.time() - t
-        ConanOutput().success(f"Upload completed in {int(elapsed)}s\n")
-        add_urls(package_list, remote)
+        pass
 
     def upload_backup_sources(self, files: List) -> None:
         """
@@ -150,41 +95,4 @@ class UploadAPI:
 
         :param files: The list of files that must be uploaded
         """
-        config = self._api_helpers.global_conf
-        url = config.get("core.sources:upload_url", check_type=str)
-        if url is None:
-            return
-        url = url if url.endswith("/") else url + "/"
-
-        output = ConanOutput()
-        output.subtitle("Uploading backup sources")
-        if not files:
-            output.info("No backup sources files to upload")
-            return
-
-        requester = self._api_helpers.requester
-        uploader = FileUploader(requester, verify=True, config=config, source_credentials=True)
-        # TODO: For Artifactory, we can list all files once and check from there instead
-        #  of 1 request per file, but this is more general
-        for file in files:
-            basename = os.path.basename(file)
-            full_url = url + basename
-            is_summary = file.endswith(".json")
-            file_kind = "summary" if is_summary else "file"
-            try:
-                if is_summary or not uploader.exists(full_url, auth=None):
-                    output.info(f"Uploading {file_kind} '{basename}' to backup sources server")
-                    uploader.upload(full_url, file, dedup=False, auth=None)
-                else:
-                    output.info(f"File '{basename}' already in backup sources server, "
-                                "skipping upload")
-            except (AuthenticationException, ForbiddenException) as e:
-                if is_summary:
-                    output.warning(f"Could not update summary '{basename}' in backup sources server. "
-                                   "Skipping updating file but continuing with upload. "
-                                   f"Missing permissions?: {e}")
-                else:
-                    raise ConanException(f"Authentication to source backup server '{url}' failed, "
-                                         f"please check your 'source_credentials.json': {e}")
-
-        output.success("Upload backup sources complete\n")
+        pass

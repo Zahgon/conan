@@ -41,7 +41,7 @@ class TextINIParse:
 
     def line_items(self):
         # Used atm by load_binary_info()
-        return self._sections.items()
+        pass
 
     def __getattr__(self, name):
         if name in self._sections:

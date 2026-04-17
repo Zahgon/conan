@@ -34,13 +34,7 @@ from conan.tools.files import save
 
 
 def _get_cpu_name(conanfile):
-    host_os = conanfile.settings.get_safe('os').lower()
-    host_arch = conanfile.settings.get_safe('arch')
-    if is_apple_os(conanfile):
-        host_os = "darwin" if host_os == "macos" else host_os
-        host_arch = to_apple_arch(conanfile)
-    # FIXME: Probably it's going to fail, but let's try it because it normally follows this syntax
-    return f"{host_os}_{host_arch}"
+    pass
 
 
 # FIXME: In the future, it could be BazelPlatform instead? Check https://bazel.build/concepts/platforms
@@ -113,56 +107,30 @@ class BazelToolchain:
 
     @staticmethod
     def _filter_list_empty_fields(v):
-        return list(filter(bool, v))
+        pass
 
     @property
     def cxxflags(self):
-        ret = [self.cppstd]
-        conf_flags = self._conanfile.conf.get("tools.build:cxxflags", default=[], check_type=list)
-        ret = ret  + self.cxxopt + conf_flags
-        return self._filter_list_empty_fields(ret)
+        pass
 
     @property
     def cflags(self):
-        conf_flags = self._conanfile.conf.get("tools.build:cflags", default=[], check_type=list)
-        ret = self.conlyopt + conf_flags
-        return self._filter_list_empty_fields(ret)
+        pass
 
     @property
     def ldflags(self):
-        conf_flags = self._conanfile.conf.get("tools.build:sharedlinkflags", default=[],
-                                              check_type=list)
-        conf_flags.extend(self._conanfile.conf.get("tools.build:exelinkflags", default=[],
-                                                   check_type=list))
-        linker_scripts = self._conanfile.conf.get("tools.build:linker_scripts", default=[], check_type=list)
-        conf_flags.extend(["-T'" + linker_script + "'" for linker_script in linker_scripts])
-        ret = self.linkopt + conf_flags
-        return self._filter_list_empty_fields(ret)
+        pass
 
     def _context(self):
-        return {
-            "copt": " ".join(f"--copt={flag}" for flag in self.copt),
-            "conlyopt": " ".join(f"--conlyopt={flag}" for flag in self.cflags),
-            "cxxopt": " ".join(f"--cxxopt={flag}" for flag in self.cxxflags),
-            "linkopt": " ".join(f"--linkopt={flag}" for flag in self.ldflags),
-            "force_pic": self.force_pic,
-            "dynamic_mode": self.dynamic_mode,
-            "compilation_mode": self.compilation_mode,
-            "compiler": self.compiler,
-            "cpu": self.cpu,
-            "crosstool_top": self.crosstool_top,
-        }
+        pass
 
     @property
     def _content(self):
-        context = self._context()
-        content = Template(self.bazelrc_template).render(context)
-        return content
+        pass
 
     def generate(self):
         """
         Creates a ``conan_bzl.rc`` file with some bazel-build configuration. This last mentioned
         is put as ``conan-config``.
         """
-        check_duplicated_generator(self, self._conanfile)
-        save(self._conanfile, BazelToolchain.bazelrc_name, self._content)
+        pass

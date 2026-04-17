@@ -14,77 +14,72 @@ class HomePaths:
 
     @property
     def local_recipes_index_path(self):
-        return os.path.join(self._home, ".local_recipes_index")
+        pass
 
     @property
     def global_conf_path(self):
-        return os.path.join(self._home, "global.conf")
+        pass
 
     @property
     def deployers_path(self):
-        deploy = os.path.join(self._home, _EXTENSIONS_FOLDER, "deploy")
-        if os.path.exists(deploy):
-            ConanOutput().warning("Use 'deployers' cache folder for deployers instead of 'deploy'",
-                                  warn_tag="deprecated")
-            return deploy
-        return os.path.join(self._home, _EXTENSIONS_FOLDER, "deployers")
+        pass
 
     @property
     def custom_generators_path(self):
-        return os.path.join(self._home, _EXTENSIONS_FOLDER, "generators")
+        pass
 
     @property
     def hooks_path(self):
-        return os.path.join(self._home, _EXTENSIONS_FOLDER, "hooks")
+        pass
 
     @property
     def wrapper_path(self):
-        return os.path.join(self._home, _EXTENSIONS_FOLDER, _PLUGINS, "cmd_wrapper.py")
+        pass
 
     @property
     def profiles_path(self):
-        return os.path.join(self._home, "profiles")
+        pass
 
     @property
     def profile_plugin_path(self):
-        return os.path.join(self._home, _EXTENSIONS_FOLDER, _PLUGINS, "profile.py")
+        pass
 
     @property
     def auth_remote_plugin_path(self):
-        return os.path.join(self._home, _EXTENSIONS_FOLDER, _PLUGINS, "auth_remote.py")
+        pass
 
     @property
     def auth_source_plugin_path(self):
-        return os.path.join(self._home, _EXTENSIONS_FOLDER, _PLUGINS, "auth_source.py")
+        pass
 
     @property
     def sign_plugin_path(self):
-        return os.path.join(self._home, _EXTENSIONS_FOLDER, _PLUGINS, "sign", "sign.py")
+        pass
 
     @property
     def remotes_path(self):
-        return os.path.join(self._home, "remotes.json")
+        pass
 
     @property
     def providers_path(self):
-        return os.path.join(self._home, "audit_providers.json")
+        pass
 
     @property
     def compatibility_plugin_path(self):
-        return os.path.join(self._home, _EXTENSIONS_FOLDER, _PLUGINS, "compatibility")
+        pass
 
     @property
     def default_sources_backup_folder(self):
-        return os.path.join(self._home, "sources")
+        pass
 
     @property
     def settings_path(self):
-        return os.path.join(self._home, "settings.yml")
+        pass
 
     @property
     def settings_path_user(self):
-        return os.path.join(self._home, "settings_user.yml")
+        pass
 
     @property
     def config_version_path(self):
-        return os.path.join(self._home, "config_version.json")
+        pass

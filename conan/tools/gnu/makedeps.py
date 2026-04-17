@@ -47,20 +47,7 @@ def _get_formatted_dirs(folders: list, prefix_path_: str, name: str) -> list:
     :param name: component name
     :return: list of formatted directories
     """
-    ret = []
-    for directory in folders:
-        if directory.startswith("$(CONAN"):  # already a variable
-            ret.append(directory)
-            continue
-        directory = os.path.normpath(directory).replace("\\", "/")
-        prefix = ""
-        if not os.path.isabs(directory):
-            prefix = f"$(CONAN_ROOT_{name})/"
-        elif directory.startswith(prefix_path_):
-            prefix = f"$(CONAN_ROOT_{name})/"
-            directory = os.path.relpath(directory, prefix_path_).replace("\\", "/")
-        ret.append(f"{prefix}{directory}")
-    return ret
+    pass
 
 
 def _makefy(name: str) -> str:
@@ -69,7 +56,7 @@ def _makefy(name: str) -> str:
     :param name: The name to be converted
     :return: Safe makefile variable, not including bad characters that are not parsed correctly
     """
-    return re.sub(r'[^0-9A-Z_]', '_', name.upper())
+    pass
 
 
 def _makefy_properties(properties: Optional[dict]) -> dict:
@@ -78,15 +65,11 @@ def _makefy_properties(properties: Optional[dict]) -> dict:
     :param properties: The property dictionary to be converted (None is also accepted)
     :return: Modified property dictionary with keys not including bad characters that are not parsed correctly
     """
-    return {_makefy(name): value for name, value in properties.items()} if properties else {}
+    pass
 
 
 def _check_property_value(name, value, output):
-    if "\n" in value:
-        output.warning(f"Skipping propery '{name}' because it contains newline")
-        return False
-    else:
-        return True
+    pass
 
 
 def _filter_properties(properties: Optional[dict], output) -> dict:
@@ -95,47 +78,28 @@ def _filter_properties(properties: Optional[dict], output) -> dict:
     :param properties: A property dictionary (None is also accepted)
     :return: A property dictionary without the properties containing newlines
     """
-    return {name: value for name, value in properties.items() if _check_property_value(name, value, output)} if properties else {}
+    pass
 
 
 def _conan_prefix_flag(variable: str) -> str:
     """
     Return a global flag to be used as prefix to any value in the makefile
     """
-    return f"$(CONAN_{variable.upper()}_FLAG)" if variable else ""
+    pass
 
 
 def _common_cppinfo_variables() -> dict:
     """
     Regular cppinfo variables exported by any Conanfile and their Makefile prefixes
     """
-    return {
-        "objects": None,
-        "libs": "lib",
-        "defines": "define",
-        "cflags": None,
-        "cxxflags": None,
-        "sharedlinkflags": None,
-        "exelinkflags": None,
-        "frameworks": None,
-        "requires": None,
-        "system_libs": "system_lib",
-    }
+    pass
 
 
 def _common_cppinfo_dirs() -> dict:
     """
     Regular cppinfo folders exported by any Conanfile and their Makefile prefixes
     """
-    return {
-        "includedirs": "include_dir",
-        "libdirs": "lib_dir",
-        "bindirs": "bin_dir",
-        "srcdirs": None,
-        "builddirs": None,
-        "resdirs": None,
-        "frameworkdirs": None,
-    }
+    pass
 
 
 def _jinja_format_list_values() -> str:
@@ -155,41 +119,7 @@ def _jinja_format_list_values() -> str:
         value1 \
         value2
     """
-    return textwrap.dedent("""\
-            {%- macro define_variable_value_safe(var, object, attribute) -%}
-            {%- if attribute in object -%}
-            {{ define_variable_value("{}".format(var), object[attribute]) }}
-            {%- endif -%}
-            {%- endmacro %}
-
-            {%- macro define_multiple_variable_value(var, values) -%}
-            {% for property_name, value in values.items() %}
-            {{ var }}_{{ property_name }} = {{ value }}
-            {% endfor %}
-            {%- endmacro %}
-
-            {%- macro define_variable_value(var, values) -%}
-            {%- if values is not none -%}
-            {%- if values|length > 0 -%}
-            {{ var }} = {{ format_list_values(values) }}
-            {%- endif -%}
-            {%- endif -%}
-            {%- endmacro %}
-
-            {%- macro format_list_values(values) -%}
-            {% if values|length == 1 %}
-            {{ values[0] }}
-
-            {% elif values|length > 1 %}
-            \\
-            {% for value in values[:-1] %}
-            \t{{ value }} \\
-            {% endfor %}
-            \t{{ values|last }}
-
-            {% endif %}
-            {%- endmacro %}
-            """)
+    pass
 
 
 class MakeInfo:
@@ -209,33 +139,33 @@ class MakeInfo:
 
     @property
     def name(self) -> str:
-        return self._name
+        pass
 
     @property
     def dirs(self) -> list:
         """
         :return: List of cpp_info folders supported by the dependency without duplicates
         """
-        return list(set(self._dirs))
+        pass
 
     @property
     def flags(self) -> list:
         """
         :return: List of cpp_info variables supported by the dependency without duplicates
         """
-        return list(set(self._flags))
+        pass
 
     def dirs_append(self, directory: str):
         """
         Add a new cpp_info folder to the dependency
         """
-        self._dirs.append(directory)
+        pass
 
     def flags_append(self, flag: str):
         """
         Add a new cpp_info variable to the dependency
         """
-        self._flags.append(flag)
+        pass
 
 
 class GlobalContentGenerator:
@@ -276,21 +206,14 @@ class GlobalContentGenerator:
         :param deps_cpp_info_dirs: Formatted dependencies folders
         :param deps_cpp_info_flags: Formatted dependencies variables
         """
-        context = {"deps_cpp_info_dirs": deps_cpp_info_dirs,
-                   "deps_cpp_info_flags": deps_cpp_info_flags}
-        template = Template(_jinja_format_list_values() + self.template, trim_blocks=True,
-                            lstrip_blocks=True, undefined=StrictUndefined)
-        return template.render(context)
+        pass
 
     def deps_content(self, dependencies_names: list) -> str:
         """
         Generate content for CONAN_DEPS (e.g. CONAN_DEPS = zlib, openssl)
         :param dependencies_names: Non-formatted dependencies names
         """
-        context = {"deps": dependencies_names}
-        template = Template(_jinja_format_list_values() + self.template_deps, trim_blocks=True,
-                            lstrip_blocks=True, undefined=StrictUndefined)
-        return template.render(context)
+        pass
 
 
 class GlobalGenerator:
@@ -306,42 +229,26 @@ class GlobalGenerator:
         """
         List regular directories from cpp_info and format them to be used in the makefile
         """
-        dirs = {}
-        for var in _common_cppinfo_dirs():
-            key = var.replace("dirs", "_dirs")
-            dirs[key] = [f"$(CONAN_{key.upper()}_{_makefy(makeinfo.name)})"
-                         for makeinfo in self._make_infos if var in makeinfo.dirs]
-        return dirs
+        pass
 
     def _get_dependency_flags(self) -> dict:
         """
         List common variables from cpp_info and format them to be used in the makefile
         """
-        flags = {}
-        for var in _common_cppinfo_variables():
-            key = var.replace("dirs", "_dirs")
-            flags[key] = [f"$(CONAN_{key.upper()}_{_makefy(makeinfo.name)})"
-                          for makeinfo in self._make_infos if var in makeinfo.flags]
-        return flags
+        pass
 
     def generate(self) -> str:
         """
         Process folder and variables for a dependency and generates its Makefile content
         """
-        glob_content_gen = GlobalContentGenerator()
-        dirs = self._get_dependency_dirs()
-        flags = self._get_dependency_flags()
-        return glob_content_gen.content(dirs, flags)
+        pass
 
     def deps_generate(self) -> str:
         """
         Process dependencies names and generates its Makefile content.
         It should be added as first variable in the Makefile.
         """
-        dependencies = [makeinfo.name for makeinfo in self._make_infos
-                        if makeinfo.name != self._conanfile.name]
-        glob_content_gen = GlobalContentGenerator()
-        return glob_content_gen.deps_content(dependencies)
+        pass
 
 
 class DepComponentContentGenerator:
@@ -389,18 +296,7 @@ class DepComponentContentGenerator:
         """
         Format template and generate Makefile component
         """
-        context = {
-            "dep": self._dep,
-            "comp_name": self._name,
-            "dep_name": _makefy(self._dep.ref.name),
-            "name": _makefy(self._name),
-            "cpp_info_dirs": self._dirs,
-            "cpp_info_flags": self._flags,
-            "properties": _makefy_properties(_filter_properties(self._dep.cpp_info.components[self._name]._properties, self._output)),
-        }
-        template = Template(_jinja_format_list_values() + self.template, trim_blocks=True,
-                            lstrip_blocks=True, undefined=StrictUndefined)
-        return template.render(context)
+        pass
 
 
 class DepContentGenerator:
@@ -453,20 +349,7 @@ class DepContentGenerator:
         """
         Parse dependency variables and generate its Makefile content
         """
-        context = {
-            "dep": self._dep,
-            "req": self._req,
-            "name": _makefy(self._dep.ref.name),
-            "root": self._root,
-            "sysroot": self._sysroot,
-            "components": list(self._dep.cpp_info.get_sorted_components().keys()),
-            "cpp_info_dirs": self._dirs,
-            "cpp_info_flags": self._flags,
-            "properties": _makefy_properties(_filter_properties(self._dep.cpp_info._properties, self._output)),
-        }
-        template = Template(_jinja_format_list_values() + self.template, trim_blocks=True,
-                            lstrip_blocks=True, undefined=StrictUndefined)
-        return template.render(context)
+        pass
 
 
 class DepComponentGenerator:
@@ -494,16 +377,7 @@ class DepComponentGenerator:
         List regular directories from cpp_info and format them to be used in the makefile
         :return: A dictionary with regular folder name and its formatted path
         """
-        dirs = {}
-        for var, flag in _common_cppinfo_dirs().items():
-            cppinfo_value = getattr(self._comp, var)
-            formatted_dirs = _get_formatted_dirs(cppinfo_value, self._root, _makefy(self._name))
-            if formatted_dirs:
-                self._makeinfo.dirs_append(var)
-                var = var.replace("dirs", "_dirs")
-                formatted_dirs = self._rootify(self._root, self._dep.ref.name, cppinfo_value)
-                dirs[var] = [_conan_prefix_flag(flag) + it for it in formatted_dirs]
-        return dirs
+        pass
 
     @staticmethod
     def _rootify(root: str, root_id: str, path_list: list) -> list:
@@ -514,39 +388,21 @@ class DepComponentGenerator:
         :param path_list: folder list available in the component
         :return: A formatted folder list, solving root folder path as prefix
         """
-        root_len = len(root)
-        root_with_sep = root + os.sep
-        root_var_ref = f"$(CONAN_ROOT_{_makefy(root_id)})"
-        return [root_var_ref + path[root_len:].replace("\\", "/") if path.startswith(root_with_sep)
-                else path for path in path_list]
+        pass
 
     def _get_component_flags(self) -> dict:
         """
         List common variables from cpp_info and format them to be used in the makefile
         :return: A dictionary with regular flag/variable name and its formatted value with prefix
         """
-        flags = {}
-        for var, prefix_var in _common_cppinfo_variables().items():
-            cppinfo_value = getattr(self._comp, var)
-            if not cppinfo_value:
-                continue
-            if "flags" in var:
-                cppinfo_value = [var.replace('"', '\\"') for var in cppinfo_value]
-            if cppinfo_value:
-                flags[var] = [_conan_prefix_flag(prefix_var) + it for it in cppinfo_value]
-                self._makeinfo.flags_append(var)
-        return flags
+        pass
 
     def generate(self) -> str:
         """
         Process component cpp_info variables and generate its Makefile content
         :return: Component Makefile content
         """
-        dirs = self._get_component_dirs()
-        flags = self._get_component_flags()
-        comp_content_gen = DepComponentContentGenerator(self._dep, self._name, dirs, flags, self._output)
-        comp_content = comp_content_gen.content()
-        return comp_content
+        pass
 
 
 class DepGenerator:
@@ -565,7 +421,7 @@ class DepGenerator:
         """
         :return: Dependency folder and flags
         """
-        return self._info
+        pass
 
     def _get_dependency_dirs(self, root: str, dependency) -> dict:
         """
@@ -574,74 +430,33 @@ class DepGenerator:
         :param dependency: Dependency object
         :return: A dictionary with regular folder name and its formatted path
         """
-        dirs = {}
-        for var, prefix in _common_cppinfo_dirs().items():
-            cppinfo_value = getattr(dependency.cpp_info, var)
-            if not cppinfo_value:  # The root value is not defined, there might be components
-                cppinfo_value = [f"$(CONAN_{var.replace('dirs', '_dirs').upper()}_{_makefy(dependency.ref.name)}_{_makefy(name)})"
-                                 for name, obj in dependency.cpp_info.components.items() if getattr(obj, var.lower())]
-                prefix = ""
-            formatted_dirs = _get_formatted_dirs(cppinfo_value, root, _makefy(dependency.ref.name))
-            if formatted_dirs:
-                self._info.dirs_append(var)
-                var = var.replace("dirs", "_dirs")
-                dirs[var] = [_conan_prefix_flag(prefix) + it for it in formatted_dirs]
-        return dirs
+        pass
 
     def _get_dependency_flags(self, dependency) -> dict:
         """
         List common variables from cpp_info and format them to be used in the makefile
         :param dependency: Dependency object
         """
-        flags = {}
-        for var, prefix_var in _common_cppinfo_variables().items():
-            cppinfo_value = getattr(dependency.cpp_info, var)
-            # Use component cpp_info info when does not provide any value
-            if not cppinfo_value:
-                cppinfo_value = [f"$(CONAN_{var.upper()}_{_makefy(dependency.ref.name)}_{_makefy(name)})" for name, obj in dependency.cpp_info.components.items() if getattr(obj, var.lower())]
-                # avoid repeating same prefix twice
-                prefix_var = ""
-            if "flags" in var:
-                cppinfo_value = [var.replace('"', '\\"') for var in cppinfo_value]
-            if cppinfo_value:
-                self._info.flags_append(var)
-                flags[var] = [_conan_prefix_flag(prefix_var) + it for it in cppinfo_value]
-        return flags
+        pass
 
     def _get_sysroot(self, root: str) -> list:
         """
         Get the sysroot of the dependency. Sysroot is a list of directories, or a single directory
         """
-        sysroot = self._dep.cpp_info.sysroot if isinstance(self._dep.cpp_info.sysroot, list) else [self._dep.cpp_info.sysroot]
-        # sysroot may return ['']
-        if not sysroot or not sysroot[0]:
-            return []
-        return _get_formatted_dirs(sysroot, root, _makefy(self._dep.ref.name)) if sysroot and sysroot[0] else None
+        pass
 
     def _get_root_folder(self):
         """
         Get the root folder of the dependency
         """
-        root = self._dep.recipe_folder if self._dep.package_folder is None else self._dep.package_folder
-        return root.replace("\\", "/")
+        pass
 
     def generate(self) -> str:
         """
         Process dependency folders and flags to generate its Makefile content. Plus, execute same
         steps for each component
         """
-        root = self._get_root_folder()
-        sysroot = self._get_sysroot(root)
-        dirs = self._get_dependency_dirs(root, self._dep)
-        flags = self._get_dependency_flags(self._dep)
-        dep_content_gen = DepContentGenerator(self._dep, self._req, root, sysroot, dirs, flags, self._output)
-        content = dep_content_gen.content()
-
-        for comp_name, comp in self._dep.cpp_info.get_sorted_components().items():
-            component_gen = DepComponentGenerator(self._dep, self._info, comp_name, comp, root, self._output)
-            content += component_gen.generate()
-
-        return content
+        pass
 
 
 class MakeDeps:
@@ -661,27 +476,4 @@ class MakeDeps:
         """
         Collects all dependencies and components, then, generating a Makefile
         """
-        check_duplicated_generator(self, self._conanfile)
-
-        host_req = self._conanfile.dependencies.host
-        test_req = self._conanfile.dependencies.test
-
-        content_buffer = f"{self._title}\n"
-        deps_buffer = ""
-
-        # Filter the build_requires not activated for any requirement
-        dependencies = list(host_req.items()) + list(test_req.items())
-
-        make_infos = []
-
-        for require, dep in dependencies:
-            output = ConanOutput(scope=f"{self._conanfile} MakeDeps: {dep}:")
-            dep_gen = DepGenerator(dep, require, output)
-            make_infos.append(dep_gen.makeinfo)
-            deps_buffer += dep_gen.generate()
-
-        glob_gen = GlobalGenerator(self._conanfile, make_infos)
-        content_buffer += glob_gen.deps_generate() + deps_buffer + glob_gen.generate()
-
-        save(self._conanfile, CONAN_MAKEFILE_FILENAME, content_buffer)
-        self._conanfile.output.info(f"Generated {CONAN_MAKEFILE_FILENAME}")
+        pass

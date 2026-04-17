@@ -22,7 +22,7 @@ def check_min_cstd(conanfile, cstd, gnu_extensions=False):
     :param cstd: Minimal cstd version required
     :param gnu_extensions: GNU extension is required (e.g gnu17)
     """
-    _check_cstd(conanfile, cstd, operator.lt, gnu_extensions)
+    pass
 
 
 def check_max_cstd(conanfile, cstd, gnu_extensions=False):
@@ -42,7 +42,7 @@ def check_max_cstd(conanfile, cstd, gnu_extensions=False):
     :param cstd: Maximum cstd version required
     :param gnu_extensions: GNU extension is required (e.g gnu17)
     """
-    _check_cstd(conanfile, cstd, operator.gt, gnu_extensions)
+    pass
 
 
 def valid_min_cstd(conanfile, cstd, gnu_extensions=False):
@@ -53,11 +53,7 @@ def valid_min_cstd(conanfile, cstd, gnu_extensions=False):
     :param gnu_extensions: GNU extension is required (e.g gnu17). This option ONLY works on Linux.
     :return: True, if current cstd matches the required cstd version. Otherwise, False.
     """
-    try:
-        check_min_cstd(conanfile, cstd, gnu_extensions)
-    except ConanInvalidConfiguration:
-        return False
-    return True
+    pass
 
 
 def valid_max_cstd(conanfile, cstd, gnu_extensions=False):
@@ -68,11 +64,7 @@ def valid_max_cstd(conanfile, cstd, gnu_extensions=False):
     :param gnu_extensions: GNU extension is required (e.g gnu17). This option ONLY works on Linux.
     :return: True, if current cstd matches the required cstd version. Otherwise, False.
     """
-    try:
-        check_max_cstd(conanfile, cstd, gnu_extensions)
-    except ConanInvalidConfiguration:
-        return False
-    return True
+    pass
 
 
 def default_cstd(conanfile, compiler=None, compiler_version=None):
@@ -85,11 +77,7 @@ def default_cstd(conanfile, compiler=None, compiler_version=None):
     :param compiler_version: Version of the compiler e.g. 12
     :return: The default ``compiler.cstd`` for the specified compiler
     """
-    compiler = compiler or conanfile.settings.get_safe("compiler")
-    compiler_version = compiler_version or conanfile.settings.get_safe("compiler.version")
-    if not compiler or not compiler_version:
-        raise ConanException("Called default_cppstd with no compiler or no compiler.version")
-    return default_cstd_(compiler, Version(compiler_version))
+    pass
 
 
 def supported_cstd(conanfile, compiler=None, compiler_version=None):
@@ -103,20 +91,7 @@ def supported_cstd(conanfile, compiler=None, compiler_version=None):
     :param compiler_version: Version of the compiler e.g: 12
     :return: a list of supported ``cstd`` values.
     """
-    compiler = compiler or conanfile.settings.get_safe("compiler")
-    compiler_version = compiler_version or conanfile.settings.get_safe("compiler.version")
-    if not compiler or not compiler_version:
-        raise ConanException("Called supported_cstd with no compiler or no compiler.version")
-
-    func = {"apple-clang": _apple_clang_supported_cstd,
-            "gcc": _gcc_supported_cstd,
-            "msvc": _msvc_supported_cstd,
-            "clang": _clang_supported_cstd,
-            "emcc": _emcc_supported_cstd,
-            }.get(compiler)
-    if func:
-        return func(Version(compiler_version))
-    return None
+    pass
 
 
 def _check_cstd(conanfile, cstd, comparator, gnu_extensions):
@@ -137,75 +112,30 @@ def _check_cstd(conanfile, cstd, comparator, gnu_extensions):
     :param comparator: Operator to use to compare the detected and the required cstd versions.
     :param gnu_extensions: GNU extension is required (e.g gnu17)
     """
-    if not str(cstd).isdigit():
-        raise ConanException("cstd parameter must be a number")
-
-    def compare(lhs, rhs, comp):
-        def extract_cpp_version(_cstd):
-            return str(_cstd).replace("gnu", "")
-
-        def add_millennium(_cstd):
-            return "19%s" % _cstd if _cstd == "99" else "20%s" % _cstd
-
-        lhs = add_millennium(extract_cpp_version(lhs))
-        rhs = add_millennium(extract_cpp_version(rhs))
-        return not comp(lhs, rhs)
-
-    current_cstd = conanfile.settings.get_safe("compiler.cstd")
-    if current_cstd is None:
-        raise ConanInvalidConfiguration("The compiler.cstd is not defined for this configuration")
-
-    if gnu_extensions and "gnu" not in current_cstd:
-        raise ConanInvalidConfiguration("The cstd GNU extension is required")
-
-    if not compare(current_cstd, cstd, comparator):
-        raise ConanInvalidConfiguration(
-            "Current cstd ({}) is {} than the required C standard ({}).".format(
-                current_cstd, "higher" if comparator == operator.gt else "lower", cstd))
+    pass
 
 
 def _apple_clang_supported_cstd(version):
     # TODO: Per-version support
-    return ["99", "gnu99", "11", "gnu11", "17", "gnu17", "23", "gnu23"]
+    pass
 
 
 def _gcc_supported_cstd(version):
-    if version < "4.7":
-        return ["99", "gnu99"]
-    if version < "8":
-        return ["99", "gnu99", "11", "gnu11"]
-    if version < "14":
-        return ["99", "gnu99", "11", "gnu11", "17", "gnu17"]
-    return ["99", "gnu99", "11", "gnu11", "17", "gnu17", "23", "gnu23"]
+    pass
 
 
 def _msvc_supported_cstd(version):
-    if version < "192":
-        return []
-    return ["11", "17"]
+    pass
 
 
 def _clang_supported_cstd(version):
-    if version < "3":
-        return ["99", "gnu99"]
-    if version < "6":
-        return ["99", "gnu99", "11", "gnu11"]
-    if version < "18":
-        return ["99", "gnu99", "11", "gnu11", "17", "gnu17"]
-    return ["99", "gnu99", "11", "gnu11", "17", "gnu17", "23", "gnu23"]
+    pass
 
 
 def _emcc_supported_cstd(version):
     """
     emcc is based on clang but follow different versioning scheme.
     """
-    if version <= "3.0.1":
-        return _clang_supported_cstd(Version("14"))
-    if version <= "3.1.50":
-        return _clang_supported_cstd(Version("18"))
-    if version <= "4.0.1":
-        return _clang_supported_cstd(Version("20"))
-    # Since emcc 4.0.2 clang version is 21
-    return _clang_supported_cstd(Version("21"))
+    pass
 
 

@@ -23,71 +23,46 @@ class PkgConfig:
         self._variables = None
 
     def _parse_output(self, option):
-        executable = self._conanfile.conf.get("tools.gnu:pkg_config", default="pkg-config")
-        command = cmd_args_to_string([executable, '--' + option, self._library, '--print-errors'])
-
-        env = Environment()
-        if self._pkg_config_path:
-            env.prepend_path("PKG_CONFIG_PATH", self._pkg_config_path)
-        with env.vars(self._conanfile).apply():
-            # This way we get the environment from ConanFile, from profile (default buildenv)
-            output, err = StringIO(), StringIO()
-            ret = self._conanfile.run(command, stdout=output, stderr=err, quiet=True,
-                                      ignore_errors=True)
-            if ret != 0:
-                raise ConanException(f"PkgConfig failed. Command: {command}\n"
-                                     f"    stdout:\n{textwrap.indent(output.getvalue(), '    ')}\n"
-                                     f"    stderr:\n{textwrap.indent(err.getvalue(), '    ')}\n")
-        value = output.getvalue().strip()
-        return value
+        pass
 
     def _get_option(self, option):
-        if option not in self._info:
-            self._info[option] = self._parse_output(option)
-        return self._info[option]
+        pass
 
     @property
     def includedirs(self):
-        return [include[2:] for include in self._get_option('cflags-only-I').split()]
+        pass
 
     @property
     def cflags(self):
-        return [flag for flag in self._get_option('cflags-only-other').split()
-                if not flag.startswith("-D")]
+        pass
 
     @property
     def defines(self):
-        return [flag[2:] for flag in self._get_option('cflags-only-other').split()
-                if flag.startswith("-D")]
+        pass
 
     @property
     def libdirs(self):
-        return [lib[2:] for lib in self._get_option('libs-only-L').split()]
+        pass
 
     @property
     def libs(self):
-        return [lib[2:] for lib in self._get_option('libs-only-l').split()]
+        pass
 
     @property
     def linkflags(self):
-        return self._get_option('libs-only-other').split()
+        pass
 
     @property
     def provides(self):
-        return self._get_option('print-provides')
+        pass
 
     @property
     def version(self):
-        return self._get_option('modversion')
+        pass
 
     @property
     def variables(self):
-        if self._variables is None:
-            variable_names = self._parse_output('print-variables').split()
-            self._variables = {}
-            for name in variable_names:
-                self._variables[name] = self._parse_output('variable=%s' % name)
-        return self._variables
+        pass
 
     def fill_cpp_info(self, cpp_info, is_system=True, system_libs=None):
         """
@@ -98,19 +73,4 @@ class PkgConfig:
         :param system_libs: If ``True``, all detected libraries will be assigned to ``cpp_info.system_libs``, and none to ``cpp_info.libs``.
 
         """
-        if not self.provides:
-            raise ConanException("PkgConfig error, '{}' files not available".format(self._library))
-        self._conanfile.output.verbose(f"PkgConfig fill cpp_info for {self._library}")
-        if is_system:
-            cpp_info.system_libs = self.libs
-        else:
-            system_libs = system_libs or []
-            cpp_info.libs = [lib for lib in self.libs if lib not in system_libs]
-            cpp_info.system_libs = [lib for lib in self.libs if lib in system_libs]
-        cpp_info.libdirs = self.libdirs
-        cpp_info.sharedlinkflags = self.linkflags
-        cpp_info.exelinkflags = self.linkflags
-        cpp_info.defines = self.defines
-        cpp_info.includedirs = self.includedirs
-        cpp_info.cflags = self.cflags
-        cpp_info.cxxflags = self.cflags
+        pass

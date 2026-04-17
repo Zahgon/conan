@@ -29,20 +29,14 @@ class EditablePackages:
         """
         Create a new instance with the union of the editable packages of self and other
         """
-        if ws_editables is None:
-            return self
-        result = EditablePackages()
-        result._edited_refs = self._edited_refs.copy()
-        result._edited_refs.update(ws_editables)
-        return result
+        pass
 
     @property
     def edited_refs(self):
-        return self._edited_refs
+        pass
 
     def save(self):
-        d = {str(ref): d for ref, d in self._edited_refs.items()}
-        save(self._edited_file, json.dumps(d))
+        pass
 
     def get(self, ref):
         _tmp = copy.copy(ref)
@@ -50,27 +44,7 @@ class EditablePackages:
         return self._edited_refs.get(_tmp)
 
     def add(self, ref, path, output_folder=None):
-        assert isinstance(ref, RecipeReference)
-        _tmp = copy.copy(ref)
-        _tmp.revision = None
-        self._edited_refs[ref] = {"path": path, "output_folder": output_folder}
-        self.save()
+        pass
 
     def remove(self, path, requires):
-        removed = {}
-        kept = {}
-        for ref, info in self._edited_refs.items():
-            to_remove = False
-            if path and info["path"] == path:
-                to_remove = True
-            else:
-                for r in requires or []:
-                    if fnmatch.fnmatch(str(ref), r):
-                        to_remove = True
-            if to_remove:
-                removed[ref] = info
-            else:
-                kept[ref] = info
-        self._edited_refs = kept
-        self.save()
-        return removed
+        pass

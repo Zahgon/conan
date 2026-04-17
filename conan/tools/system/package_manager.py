@@ -37,51 +37,11 @@ class _SystemPackageManagerTool:
         self._arch_separator = ""
 
     def get_default_tool(self):
-        os_name = platform.system()
-        if os_name in ["Linux", "FreeBSD"]:
-            import distro
-            os_name = distro.id() or os_name
-        elif os_name == "Windows" and self._conanfile.settings.get_safe("os.subsystem") == "msys2":
-            os_name = "msys2"
-        manager_mapping = {"apt-get": ["Linux", "ubuntu", "debian", "raspbian", "linuxmint",
-                                       'astra', 'elbrus', 'altlinux', 'pop'],
-                           "apk": ["alpine"],
-                           "yum": ["pidora", "scientific", "xenserver", "amazon", "amzn"],
-                           "dnf": ["fedora", "rhel", "centos", "mageia", "nobara", "almalinux",
-                                   "rocky", "oracle"],
-                           "brew": ["Darwin"],
-                           "pacman": ["arch", "manjaro", "msys2", "endeavouros", "cachyos"],
-                           "choco": ["Windows"],
-                           "zypper": ["opensuse", "sles"],
-                           "pkg": ["freebsd"],
-                           "pkgutil": ["Solaris"]}
-        # first check exact match of name
-        for tool, distros in manager_mapping.items():
-            if os_name in distros:
-                return tool
-        # in case we did not detect any exact match, check
-        # if the name is contained inside the returned distro name
-        # like for opensuse, that can have opensuse-version names
-        for tool, distros in manager_mapping.items():
-            for d in distros:
-                if d in os_name:
-                    return tool
-
-        # No default package manager was found for the system,
-        # so notify the user
-        self._conanfile.output.info("A default system package manager couldn't be found for {}, "
-                                    "system packages will not be installed.".format(os_name))
+        pass
 
     def _split_package_name(self, package, host_package):
 
-        name, version = (package.split("=")[0], package.split("=")[1]) if "=" in package else (package, "")
-        arch_separator, arch_name = "", ""
-        version_separator = self.version_separator if version else ""
-
-        if self._arch in self._arch_names and cross_building(self._conanfile) and host_package:
-            arch_separator = self._arch_separator
-            arch_name = self._arch_names.get(self._arch)
-        return name, version, arch_separator, arch_name, version_separator
+        pass
 
     def get_package_name(self, package, host_package=True):
         # Only if the package is for building, for example a library,
@@ -89,38 +49,19 @@ class _SystemPackageManagerTool:
         # If the package is a tool that should be installed on the current build
         # machine we should not add the arch.
 
-        name, version, arch_separator, arch_name, version_separator = self._split_package_name(package, host_package)
-
-        return self.full_package_name.format(name=name,
-                                             arch_separator=arch_separator,
-                                             arch_name=arch_name,
-                                             version_separator=version_separator,
-                                             version=version)
+        pass
 
     @property
     def sudo_str(self):
-        sudo = "sudo " if self._sudo else ""
-        askpass = "-A " if self._sudo and self._sudo_askpass else ""
-        return "{}{}".format(sudo, askpass)
+        pass
 
     def run(self, method, *args, **kwargs):
-        if self._active_tool == self.__class__.tool_name:
-            return method(*args, **kwargs)
+        pass
 
     def _conanfile_run(self, command, accepted_returns, quiet=True):
         # When checking multiple packages, this is too noisy
         # Capture output and show it only on failure.
-        stdout_buf = StringIO() if quiet else None
-        stderr_buf = StringIO() if quiet else None
-        ret = self._conanfile.run(command, ignore_errors=True, quiet=quiet, stdout=stdout_buf, stderr=stderr_buf)
-        if ret not in accepted_returns:
-            msg = f"Command '{command}' failed with exit code {ret}"
-            if stderr_buf is not None and stderr_buf.getvalue():
-                msg += f"\nstderr: {stderr_buf.getvalue().strip()}"
-            if stdout_buf is not None and stdout_buf.getvalue():
-                msg += f"\nstdout: {stdout_buf.getvalue().strip()}"
-            raise ConanException(msg)
-        return ret
+        pass
 
     def install_substitutes(self, *args, **kwargs):
         """
@@ -140,7 +81,7 @@ class _SystemPackageManagerTool:
         :param check: check if the packages are already installed before installing them.
         :return: the return code of the executed package manager command.
         """
-        return self.run(self._install_substitutes, *args, **kwargs)
+        pass
 
     def install(self, *args, **kwargs):
         """
@@ -153,7 +94,7 @@ class _SystemPackageManagerTool:
         :param check: check if the packages are already installed before installing them.
         :return: the return code of the executed package manager command.
         """
-        return self.run(self._install, *args, **kwargs)
+        pass
 
     def update(self, *args, **kwargs):
         """
@@ -172,89 +113,24 @@ class _SystemPackageManagerTool:
         :param packages: list of packages to check.
         :return: list of packages from the packages argument that are not installed in the system.
         """
-        return self.run(self._check, *args, **kwargs)
+        pass
 
     def _install_substitutes(self, *packages_substitutes, update=False, check=True, **kwargs):
-        errors = []
-        for packages in packages_substitutes:
-            try:
-                return self.install(packages, update, check, **kwargs)
-            except ConanException as e:
-                errors.append(e)
-
-        for error in errors:
-            self._conanfile.output.warning(str(error))
-        raise ConanException("None of the installs for the package substitutes succeeded.")
+        pass
 
     def _install(self, packages, update=False, check=True, host_package=True, **kwargs):
-        orig_packages = packages
-        pkgs = self._conanfile.system_requires.setdefault(self._active_tool, {})
-        install_pkgs = pkgs.setdefault("install", [])
-        install_pkgs.extend(p for p in packages if p not in install_pkgs)
-        if self._mode == self.mode_report:
-            return
-
-        if check or self._mode in (self.mode_check, self.mode_report_installed):
-            packages = self.check(packages, host_package=host_package)
-            missing_pkgs = pkgs.setdefault("missing", [])
-            missing_pkgs.extend(p for p in packages if p not in missing_pkgs)
-        if self._mode == self.mode_report_installed:
-            return
-
-        if self._mode == self.mode_check and packages:
-            raise ConanException("System requirements: '{0}' are missing but can't install "
-                                 "because tools.system.package_manager:mode is '{1}'."
-                                 "Please update packages manually or set "
-                                 "'tools.system.package_manager:mode' "
-                                 "to '{2}' in the [conf] section of the profile, "
-                                 "or in the command line using "
-                                 "'-c tools.system.package_manager:mode={2}'".format(", ".join(packages),
-                                                                                     self.mode_check,
-                                                                                     self.mode_install))
-        elif packages:
-            if update:
-                self.update()
-            packages_arch = [self.get_package_name(package, host_package=host_package) for package in packages]
-            if packages_arch:
-                command = self.install_command.format(sudo=self.sudo_str,
-                                                      tool=self.tool_name,
-                                                      packages=" ".join(packages_arch),
-                                                      **kwargs)
-                return self._conanfile_run(command, self.accepted_install_codes, quiet=False)
-        else:
-            self._conanfile.output.info(f"System requirements: {' '.join(orig_packages)} already installed")
+        pass
 
     def _update(self):
         # we just update the package manager database in case we are in 'install mode'
         # in case we are in check mode just ignore
-        if self._mode == self.mode_install:
-            command = self.update_command.format(sudo=self.sudo_str, tool=self.tool_name)
-            return self._conanfile_run(command, self.accepted_update_codes, quiet=False)
+        pass
 
     def _check(self, packages, host_package=True):
-        missing = [pkg for pkg in packages if self.check_package(pkg, host_package) != 0]
-        return missing
+        pass
 
     def check_package(self, package, host_package=True):
-        name, version, arch_separator, arch_name, _ = self._split_package_name(package, host_package)
-
-        check_arch = self._arch if host_package else self._conanfile.settings_build.get_safe('arch')
-        arch_package = arch_name or self._arch_names.get(check_arch)
-        package = self.full_package_name.format(name=name,
-                                                arch_separator=arch_separator,
-                                                arch_name=arch_name,
-                                                version="",
-                                                version_separator="")
-        command = self.check_command.format(tool=self.tool_name, package=package, arch_package=arch_package, base_name=name)
-
-        if version:
-            if self.check_version_command:
-                command = self.check_version_command.format(tool=self.tool_name, package=package, version=version, arch_package=arch_package,
-                                                            base_name=name)
-            else:
-                self._conanfile.output.warning(f"System requirements: \"{self.tool_name}\" doesn't support package versions,"
-                                               f" \"{package}\" will be installed without a specific version.")
-        return self._conanfile_run(command, self.accepted_check_codes)
+        pass
 
 
 class Apt(_SystemPackageManagerTool):
@@ -304,9 +180,7 @@ class Apt(_SystemPackageManagerTool):
                ``'--no-install-recommends'`` argument to the *apt-get* command call.
         :return: the return code of the executed apt command.
         """
-        recommends_str = '' if recommends else '--no-install-recommends '
-        return super(Apt, self).install(packages, update=update, check=check,
-                                        host_package=host_package, recommends=recommends_str)
+        pass
 
 
 class Yum(_SystemPackageManagerTool):

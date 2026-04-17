@@ -31,26 +31,7 @@ class LocalAPI:
         :param cwd: The current working directory.
         :param py: If True, a conanfile.py must exist, a .txt is not valid in this case
         """
-        path = make_abs_path(path, cwd)
-
-        if os.path.isdir(path):  # Can be a folder
-            path_py = os.path.join(path, "conanfile.py")
-            if py:
-                path = path_py
-            else:
-                path_txt = os.path.join(path, "conanfile.txt")
-                if os.path.isfile(path_py) and os.path.isfile(path_txt):
-                    raise ConanException("Ambiguous command, both conanfile.py and "
-                                         "conanfile.txt exist")
-                path = path_py if os.path.isfile(path_py) else path_txt
-
-        if not os.path.isfile(path):  # Must exist
-            raise ConanException("Conanfile not found at %s" % path)
-
-        if py and not path.endswith(".py"):
-            raise ConanException("A conanfile.py is needed, " + path + " is not acceptable")
-
-        return path
+        pass
 
     def editable_add(self, path, name=None, version=None, user=None, channel=None, cwd=None,
                      output_folder=None, remotes: List[Remote] = None) -> RecipeReference:
@@ -69,18 +50,7 @@ class LocalAPI:
         :param remotes: The remotes to resolve possible ``python-requires`` for this recipe if needed.
         :return: RecipeReference of the added package
         """
-        path = self.get_conanfile_path(path, cwd, py=True)
-        loader = self._helpers.loader
-        conanfile = loader.load_named(path, name, version, user, channel, remotes=remotes)
-        if conanfile.name is None or conanfile.version is None:
-            raise ConanException("Editable package recipe should declare its name and version")
-        ref = RecipeReference(conanfile.name, conanfile.version, conanfile.user, conanfile.channel)
-        # Retrieve conanfile.py from target_path
-        target_path = self.get_conanfile_path(path=path, cwd=cwd, py=True)
-        output_folder = make_abs_path(output_folder) if output_folder else None
-        # Check the conanfile is there, and name/version matches
-        self._helpers.editable_packages.add(ref, target_path, output_folder=output_folder)
-        return ref
+        pass
 
     def editable_remove(self, path=None, requires=None, cwd=None):
         """ Remove an editable package from the given path
@@ -93,13 +63,10 @@ class LocalAPI:
         :param cwd: The current working directory
         :return: RecipeReference of the added package
         """
-        if path:
-            path = make_abs_path(path, cwd)
-            path = os.path.join(path, "conanfile.py")
-        return self._helpers.editable_packages.remove(path, requires)
+        pass
 
     def editable_list(self):
-        return self._helpers.editable_packages.edited_refs
+        pass
 
     def source(self, path, name=None, version=None, user=None, channel=None,
                remotes: List[Remote] = None):
@@ -115,31 +82,7 @@ class LocalAPI:
         :param channel: The channel of the package. If not defined, it is taken from conanfile
         :param remotes: The remotes to resolve possible ``python-requires`` for this recipe if needed.
         """
-        loader = self._helpers.loader
-        conanfile = loader.load_consumer(path, name=name, version=version,
-                                         user=user, channel=channel, graph_lock=None,
-                                         remotes=remotes)
-        # This profile is empty, but with the conf from global.conf
-        profile = self._conan_api.profiles.get_profile([])
-        initialize_conanfile_profile(conanfile, profile, profile, CONTEXT_HOST, False)
-        # This is important, otherwise the ``conan source`` doesn't define layout and fails
-        if hasattr(conanfile, "layout"):
-            with conanfile_exception_formatter(conanfile, "layout"):
-                conanfile.layout()
-
-        folder = conanfile.recipe_folder if conanfile.folders.root is None else \
-            os.path.normpath(os.path.join(conanfile.recipe_folder, conanfile.folders.root))
-
-        conanfile.folders.set_base_source(folder)
-        conanfile.folders.set_base_export_sources(folder)
-        conanfile.folders.set_base_recipe_metadata(os.path.join(folder, "metadata"))
-        # The generators are needed for the "conan source" local case with tool-requires
-        conanfile.folders.set_base_generators(folder)
-        conanfile.folders.set_base_build(None)
-        conanfile.folders.set_base_package(None)
-
-        hook_manager = self._helpers.hook_manager
-        run_source_method(conanfile, hook_manager)
+        pass
 
     def build(self, conanfile) -> None:
         """ Calls the ``build()`` method of the current (user folder) ``conanfile.py``
@@ -154,10 +97,7 @@ class LocalAPI:
           be called. This ``conanfile`` object must have all of its dependencies computed and
           installed in the current Conan package cache to work.
         """
-        hook_manager = self._helpers.hook_manager
-        conanfile.folders.set_base_package(conanfile.folders.base_build)
-        conanfile.folders.set_base_pkg_metadata(os.path.join(conanfile.build_folder, "metadata"))
-        run_build_method(conanfile, hook_manager)
+        pass
 
     @staticmethod
     def test(conanfile) -> None:
@@ -175,13 +115,8 @@ class LocalAPI:
           method to be called. This ``conanfile`` object must have all of its dependencies computed
           and installed in the current Conan package cache to work.
         """
-        with conanfile_exception_formatter(conanfile, "test"):
-            with chdir(conanfile.build_folder):
-                conanfile.test()
+        pass
 
     def inspect(self, conanfile_path, remotes, lockfile, name=None, version=None, user=None,
                 channel=None):
-        loader = self._helpers.loader
-        conanfile = loader.load_named(conanfile_path, name=name, version=version, user=user,
-                                      channel=channel, remotes=remotes, graph_lock=lockfile)
-        return conanfile
+        pass

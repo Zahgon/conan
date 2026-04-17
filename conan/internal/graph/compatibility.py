@@ -85,26 +85,7 @@ def _factors_combinations(factors):
 
 
 def migrate_compatibility_files(cache_folder):
-    compatible_folder = HomePaths(cache_folder).compatibility_plugin_path
-    compatibility_file = os.path.join(compatible_folder, "compatibility.py")
-    cppstd_compat_file = os.path.join(compatible_folder, "cppstd_compat.py")
-
-    def _is_migratable(file_path):
-        if not os.path.exists(file_path):
-            return True
-        content = load(file_path)
-        first_line = content.lstrip().split("\n", 1)[0]
-        return CONAN_GENERATED_COMMENT in first_line
-
-    if _is_migratable(compatibility_file) and _is_migratable(cppstd_compat_file):
-        compatibility_exists = os.path.exists(compatibility_file)
-        needs_update = not compatibility_exists or load(compatibility_file) != _default_compat
-        if needs_update:
-            save(compatibility_file, _default_compat)
-            if compatibility_exists:
-                ConanOutput().success("Migration: Successfully updated compatibility.py")
-        if os.path.exists(cppstd_compat_file):
-            os.remove(cppstd_compat_file)
+    pass
 
 
 class BinaryCompatibility:
@@ -119,60 +100,8 @@ class BinaryCompatibility:
         self._compatibility = mod.compatibility
 
     def compatibles(self, conanfile):
-        compat_infos = []
-        if hasattr(conanfile, "compatibility"):
-            with conanfile_exception_formatter(conanfile, "compatibility"):
-                recipe_compatibles = conanfile.compatibility()
-                compat_infos.extend(self._compatible_infos(conanfile, recipe_compatibles))
-
-        try:
-            plugin_compatibles = self._compatibility(conanfile)
-        except Exception as e:
-            msg = f"Error while processing 'compatibility.py' plugin for '{conanfile}'"
-            msg = scoped_traceback(msg, e, scope="plugins/compatibility")
-            raise ConanException(msg)
-        compat_infos.extend(self._compatible_infos(conanfile, plugin_compatibles))
-        if not compat_infos:
-            return {}
-
-        result = {}
-        original_info = conanfile.info
-        original_settings = conanfile.settings
-        original_settings_target = conanfile.settings_target
-        original_options = conanfile.options
-        for c in compat_infos:
-            # we replace the conanfile, so ``validate()`` and ``package_id()`` can
-            # use the compatible ones
-            conanfile.info = c
-            conanfile.settings = c.settings
-            conanfile.settings_target = c.settings_target
-            conanfile.options = c.options
-            run_validate_package_id(conanfile, self._hook_manager)
-            pid = c.package_id()
-            if pid not in result and not c.invalid:
-                result[pid] = c
-        # Restore the original state
-        conanfile.info = original_info
-        conanfile.settings = original_settings
-        conanfile.settings_target = original_settings_target
-        conanfile.options = original_options
-        return result
+        pass
 
     @staticmethod
     def _compatible_infos(conanfile, compatibles):
-        result = []
-        if compatibles:
-            for elem in compatibles:
-                compat_info = conanfile.original_info.clone()
-                compat_info.compatibility_delta = elem
-                settings = elem.get("settings")
-                if settings:
-                    compat_info.settings.update_values(settings, raise_undefined=False)
-                options = elem.get("options")
-                if options:
-                    compat_info.options.update(options_values=OrderedDict(options))
-                result.append(compat_info)
-                settings_target = elem.get("settings_target")
-                if settings_target and compat_info.settings_target:
-                    compat_info.settings_target.update_values(settings_target, raise_undefined=False)
-        return result
+        pass

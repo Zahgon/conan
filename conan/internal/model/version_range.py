@@ -77,79 +77,10 @@ class _ConditionSet:
 
     @staticmethod
     def _parse_expression(expression):
-        if expression in ("", "*"):
-            return [_Condition(">=", Version("0.0.0"))]
-        elif len(expression) == 1:
-            raise ConanException(f'Error parsing version range "{expression}"')
-
-        operator = expression[0]
-        if operator not in (">", "<", "^", "~", "="):
-            if expression[-1] == "*":  # Handle patterns like "1.2.*"
-                operator = "*"
-                expression = expression[:-1]
-            else:
-                operator = "="
-            index = 0
-        else:
-            index = 1
-        if operator in (">", "<"):
-            if expression[1] == "=":
-                operator += "="
-                index = 2
-        elif expression[1] == "=":
-            raise ConanException(f"Invalid version range operator '{operator}=' in {expression}, you should probably use {operator} instead.")
-        version = expression[index:]
-        if version == "":
-            raise ConanException(f'Error parsing version range "{expression}"')
-        if operator == "~":  # tilde minor
-            if "-" not in version:
-                version += "-"
-            v = Version(version)
-            index = 1 if len(v.main) > 1 else 0
-            return [_Condition(">=", v), _Condition("<", v.upper_bound(index))]
-        elif operator == "^":  # caret major
-            v = Version(version)
-
-            def first_non_zero(main):
-                for i, m in enumerate(main):
-                    if m != 0:
-                        return i
-                return len(main)
-
-            initial_index = first_non_zero(v.main)
-            return [_Condition(">=", v), _Condition("<", v.upper_bound(initial_index))]
-        else:
-            return [_Condition(operator, Version(version))]
+        pass
 
     def valid(self, version, conf_resolve_prepreleases):
-        if version.pre:
-            # Follow the expression desires only if core.version_ranges:resolve_prereleases is None,
-            # else force to the conf's value
-            if conf_resolve_prepreleases is None:
-                if not self.prerelease:
-                    return False
-            elif conf_resolve_prepreleases is False:
-                return False
-        for condition in self.conditions:
-            if condition.operator == ">":
-                if not version > condition.version:
-                    return False
-            elif condition.operator == "<":
-                if not version < condition.version:
-                    return False
-            elif condition.operator == ">=":
-                if not version >= condition.version:
-                    return False
-            elif condition.operator == "<=":
-                if not version <= condition.version:
-                    return False
-            elif condition.operator == "=":
-                if not version == condition.version:
-                    return False
-            elif condition.operator == "*":
-                if not str(version).startswith(str(condition.version)):
-                    return False
-        return True
+        pass
 
 
 class VersionRange:
@@ -191,55 +122,14 @@ class VersionRange:
         If ``None``, prereleases are resolved only if this version range expression says so
         :return: Whether the version is inside the range
         """
-        assert isinstance(version, Version), type(version)
-        for condition_set in self.condition_sets:
-            if condition_set.valid(version, resolve_prerelease):
-                return True
-        return False
+        pass
 
     def intersection(self, other):
-        conditions = []
-
-        def _calculate_limits(operator, lhs, rhs):
-            limits = ([c for c in lhs.conditions if operator in c.operator]
-                      + [c for c in rhs.conditions if operator in c.operator])
-            if limits:
-                return sorted(limits, reverse=operator == ">")[0]
-
-        prerelease = True
-        for lhs_conditions in self.condition_sets:
-            for rhs_conditions in other.condition_sets:
-                internal_conditions = []
-                lower_limit = _calculate_limits(">", lhs_conditions, rhs_conditions)
-                upper_limit = _calculate_limits("<", lhs_conditions, rhs_conditions)
-                if lower_limit:
-                    internal_conditions.append(lower_limit)
-                if upper_limit:
-                    internal_conditions.append(upper_limit)
-                if internal_conditions and (not lower_limit or not upper_limit or lower_limit <= upper_limit):
-                    conditions.append(internal_conditions)
-                # conservative approach: if any of the conditions forbid prereleases, forbid them in the result
-                if not lhs_conditions.prerelease or not rhs_conditions.prerelease:
-                    prerelease = False
-
-        if not conditions:
-            return None
-        expression = ' || '.join(' '.join(str(c) for c in cs) for cs in conditions) + (', include_prerelease' if prerelease else '')
-        result = VersionRange(expression)
-        # TODO: Direct definition of conditions not reparsing
-        # result.condition_sets = self.condition_sets + other.condition_sets
-        return result
+        pass
 
     def version(self):
-        return Version(f"[{self._expression}]")
+        pass
 
 
 def validate_conan_version(required_range):
-    from conan import __version__  # To avoid circular imports
-    clientver = Version(__version__)
-    version_range = VersionRange(required_range)
-    for conditions in version_range.condition_sets:
-        conditions.prerelease = True
-    if not version_range.contains(clientver, resolve_prerelease=None):
-        raise ConanException("Current Conan version ({}) does not satisfy "
-                             "the defined one ({}).".format(clientver, required_range))
+    pass

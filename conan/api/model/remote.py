@@ -56,4 +56,4 @@ class Remote:
         Note that this is done automatically when the remote is used in any operation by Conan,
         such as uploading packages, so this method is not usually needed when only interacting
         with the Conan API"""
-        self._caching = {}
+        pass

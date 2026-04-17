@@ -22,81 +22,67 @@ class CacheDatabase:
             self._packages.create_table()
 
     def exists_prev(self, ref):
-        return self._packages.get_package_revisions_reference_exists(ref)
+        pass
 
     def get_latest_package_reference(self, pref):
-        prevs = list(self._packages.get_package_revisions_references(pref, only_latest_prev=True))
-        return prevs[0]["pref"] if prevs else None
+        pass
 
     def get_latest_package_reference_data(self, pref):
         # Used just for PkgCache.pkg_layout_latest()
         # TODO: This can be refactored, unified with get_latest_package_reference()
-        prevs = list(self._packages.get_package_revisions_references(pref, only_latest_prev=True))
-        return prevs[0] if prevs else None
+        pass
 
     def update_recipe_timestamp(self, ref):
-        self._recipes.update_timestamp(ref)
+        pass
 
     def update_package_timestamp(self, pref: PkgReference, path: str, build_id: str):
-        self._packages.update_timestamp(pref, path=path, build_id=build_id)
+        pass
 
     def remove_recipe(self, ref: RecipeReference):
         # Removing the recipe must remove all the package binaries too from DB
-        self._recipes.remove(ref)
-        self._packages.remove_recipe(ref)
+        pass
 
     def remove_package(self, ref: PkgReference):
         # Removing the recipe must remove all the package binaries too from DB
-        self._packages.remove(ref)
+        pass
 
     def remove_build_id(self, pref):
-        self._packages.remove_build_id(pref)
+        pass
 
     def get_matching_build_id(self, ref, build_id):
-        result = self._packages.get_package_references_with_build_id_match(ref, build_id)
-        if result:
-            return result["pref"]
-        return None
+        pass
 
     def get_recipe(self, ref: RecipeReference):
         """ Returns the reference data as a dictionary (or fails) """
-        return self._recipes.get_recipe(ref)
+        pass
 
     def get_latest_recipe(self, ref: RecipeReference):
         """ Returns the reference data as a dictionary (or fails) """
-        return self._recipes.get_latest_recipe(ref)
+        pass
 
     def get_recipe_revisions_references(self, ref: RecipeReference):
-        return self._recipes.get_recipe_revisions_references(ref)
+        pass
 
     def try_get_package(self, ref: PkgReference):
         """ Returns the reference data as a dictionary (or fails) """
-        ref_data = self._packages.get(ref)
-        return ref_data
+        pass
 
     def create_recipe(self, path, ref: RecipeReference):
-        self._recipes.create(path, ref)
+        pass
 
     def create_package(self, path, ref: PkgReference, build_id):
-        self._packages.create(path, ref, build_id=build_id)
+        pass
 
     def list_references(self, pattern=None):
         """Returns a list of all RecipeReference in the cache, optionally filtering by pattern.
          The references have their revision and timestamp attributes unset"""
-        return [ref for ref in self._recipes.all_references()
-                if pattern is None or ref.partial_match(pattern)]
+        pass
 
     def get_package_revisions_references(self, pref: PkgReference):
-        return [d["pref"]
-                for d in self._packages.get_package_revisions_references(pref,
-                                                                         only_latest_prev=False)]
+        pass
 
     def get_package_references(self, ref: RecipeReference, only_latest_prev=True):
-        return [d["pref"]
-                for d in self._packages.get_package_references(ref, only_latest_prev)]
+        pass
 
     def path_to_ref(self, path):
-        ref = self._recipes.path_to_ref(path)
-        if ref is not None:
-            return ref
-        return self._packages.path_to_ref(path)
+        pass

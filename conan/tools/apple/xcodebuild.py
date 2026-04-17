@@ -14,20 +14,14 @@ class XcodeBuild:
 
     @property
     def _verbosity(self):
-        verbosity = self._conanfile.conf.get("tools.build:verbosity", choices=("quiet", "verbose")) \
-                    or self._conanfile.conf.get("tools.compilation:verbosity",
-                                                choices=("quiet", "verbose"))
-        return "-" + verbosity if verbosity is not None else ""
+        pass
 
     @property
     def _sdkroot(self):
         # User's sdk_path has priority, then if specified try to compose sdk argument
         # with sdk/sdk_version settings, leave blank otherwise and the sdk will be automatically
         # chosen by the build system
-        sdk = self._conanfile.conf.get("tools.apple:sdk_path")
-        if not sdk and self._sdk:
-            sdk = "{}{}".format(self._sdk, self._sdk_version)
-        return "SDKROOT={}".format(sdk) if sdk else ""
+        pass
 
     def build(self, xcodeproj, target=None, configuration=None, cli_args=None):
         """
@@ -44,16 +38,4 @@ class XcodeBuild:
                               Xcode build settings like ``["BUILD_LIBRARY_FOR_DISTRIBUTION=YES"]``.
         :return: the return code for the launched ``xcodebuild`` command.
         """
-        target = "-target '{}'".format(target) if target else "-alltargets"
-        build_config = configuration or self._build_type
-        cmd = "xcodebuild -project '{}' -configuration {} -arch {} " \
-              "{} {} {}".format(xcodeproj, build_config, self._arch, self._sdkroot,
-                                self._verbosity, target)
-        deployment_target_key = xcodebuild_deployment_target_key(self._os)
-        if deployment_target_key and self._os_version:
-            cmd += f" {deployment_target_key}={self._os_version}"
-
-        if cli_args:
-            cmd += " " + cmd_args_to_string(cli_args)
-
-        self._conanfile.run(cmd)
+        pass

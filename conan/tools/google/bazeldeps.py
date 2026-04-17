@@ -19,17 +19,7 @@ def _relativize_path(path, start_folder):
     :return: Unix-like path relative if matches to the given pattern.
              Otherwise, it returns the original path.
     """
-    if not path or not start_folder:
-        return path
-    path_ = path.replace("\\", "/").replace("/./", "/")
-    pattern_ = start_folder.replace("\\", "/").replace("/./", "/")
-    match = re.match(pattern_, path_)
-    if match:
-        matching = match[0]
-        if path_.startswith(matching):
-            path_ = path_.replace(matching, "").strip("/")
-            return path_.strip("./") or "./"
-    return path
+    pass
 
 
 class _BazelDepBuildGenerator:
@@ -162,82 +152,51 @@ class _BazelDepBuildGenerator:
         """
         Returns the absolute path to the BUILD file created by Conan
         """
-        folder = os.path.join(self._get_repository_name(self._dep), self.dep_build_filename)
-        return folder.replace("\\", "/")
+        pass
 
     @property
     def _absolute_build_file_path(self):
         """
         Returns the absolute path to the BUILD file created by Conan
         """
-        folder = os.path.join(self._conanfile.generators_folder, self._build_file_path)
-        return folder.replace("\\", "/")
+        pass
 
     @property
     def _package_folder(self):
         """
         Returns the package folder path
         """
-        # If editable, package_folder can be None
-        root_folder = self._dep.recipe_folder if self._dep.package_folder is None \
-            else self._dep.package_folder
-        return root_folder.replace("\\", "/")
+        pass
 
     def _get_repository_name(self, dep):
-        pkg_name = dep.cpp_info.get_property("bazel_repository_name") or dep.ref.name
-        return f"build-{pkg_name}" if self._is_build_require else pkg_name
+        pass
 
     def _get_target_name(self, dep):
-        pkg_name = dep.cpp_info.get_property("bazel_target_name") or dep.ref.name
-        return pkg_name
+        pass
 
     def _get_component_name(self, dep, comp_ref_name):
-        pkg_name = self._get_target_name(dep)
-        if comp_ref_name not in dep.cpp_info.components:
-            # foo::foo might be referencing the root cppinfo
-            if dep.ref.name == comp_ref_name:
-                return pkg_name
-            return f"{pkg_name}-{comp_ref_name}"
-        comp_name = dep.cpp_info.components[comp_ref_name].get_property("bazel_target_name")
-        # If user did not set bazel_target_name, let's create a component name
-        # with a namespace, e.g., dep-comp1
-        return comp_name or f"{pkg_name}-{comp_ref_name}"
+        pass
 
     def _get_headers(self, cpp_info):
-        return ['"{}/**"'.format(_relativize_path(path, self._package_folder))
-                for path in cpp_info.includedirs]
+        pass
 
     def _get_bindirs(self, cpp_info):
-        return [_relativize_path(bindir, self._package_folder) for bindir in cpp_info.bindirs]
+        pass
 
     def _get_includes(self, cpp_info):
-        return ['"{}"'.format(_relativize_path(path, self._package_folder))
-                for path in cpp_info.includedirs]
+        pass
 
     def _get_defines(self, cpp_info):
-        return ['"{}"'.format(define.replace('"', '\\' * 3 + '"'))
-                for define in cpp_info.defines]
+        pass
 
     def _get_linkopts(self, cpp_info):
-        os_build = self._dep.settings_build.get_safe("os")
-        link_opt = '/DEFAULTLIB:{}' if os_build == "Windows" else '-l{}'
-        system_libs = [link_opt.format(lib) for lib in cpp_info.system_libs]
-        shared_flags = cpp_info.sharedlinkflags + cpp_info.exelinkflags
-        frameworkdirs_flags = []
-        framework_flags = []
-        for frw in cpp_info.frameworks:
-            framework_flags.extend(["-framework", frw])
-        for frw_dir in cpp_info.frameworkdirs:
-            frameworkdirs_flags.extend(["-F", frw_dir.replace("\\", "/")])
-        return [f'"{flag}"' for flag in (system_libs + shared_flags + framework_flags + frameworkdirs_flags)]
+        pass
 
     def _get_copts(self, cpp_info):
         # FIXME: long discussions between copts (-Iflag) vs includes in Bazel. Not sure yet
         # includedirsflags = ['"-I{}"'.format(_relativize_path(d, package_folder_path))
         #                     for d in cpp_info.includedirs]
-        cxxflags = [var.replace('"', '\\"') for var in cpp_info.cxxflags]
-        cflags = [var.replace('"', '\\"') for var in cpp_info.cflags]
-        return [f'"{flag}"' for flag in (cxxflags + cflags)]
+        pass
 
     def _get_component_requirement_names(self, cpp_info):
         """
@@ -259,58 +218,11 @@ class _BazelDepBuildGenerator:
                 self.cpp_info.components["cmp"].requires = ["other::cmp1"]
         ```
         """
-        dep_ref_name = self._dep.ref.name
-        ret = []
-        for req in cpp_info.requires:
-            pkg_ref_name, comp_ref_name = req.split("::") if "::" in req else (dep_ref_name, req)
-            prefix = ":"  # Requirements declared in the same BUILD file
-            # For instance, dep == "hello/1.0" and req == "other::cmp1" -> hello != other
-            if dep_ref_name != pkg_ref_name:
-                try:
-                    req_conanfile = self._transitive_reqs[pkg_ref_name]
-                    # Requirements declared in another dependency BUILD file
-                    prefix = f"@{self._get_repository_name(req_conanfile)}//:"
-                except KeyError:
-                    continue  # If the dependency is not in the transitive, might be skipped
-            else:  # For instance, dep == "hello/1.0" and req == "hello::cmp1" -> hello == hello
-                req_conanfile = self._dep
-            comp_name = self._get_component_name(req_conanfile, comp_ref_name)
-            dep_name = f"{prefix}{comp_name}"
-            if dep_name not in ret:
-                ret.append(dep_name)
-        return ret
+        pass
 
     def _get_lib_info(self, cpp_info, deduced_cpp_info, component_name=None):
 
-        def _lib_info(lib_name, virtual_cpp_info):
-            info = {
-                "name": lib_name,
-                "is_shared": virtual_cpp_info.type == PackageType.SHARED,
-                "lib_path": _relativize_path(virtual_cpp_info.location, self._package_folder),
-                "import_lib_path": _relativize_path(virtual_cpp_info.link_location, self._package_folder),
-                "linkopts": []
-            }
-            if info['is_shared'] and info["lib_path"] and not info["lib_path"].endswith(".dll"):
-                # Issue: https://github.com/conan-io/conan/issues/19190
-                # Issue: https://github.com/conan-io/conan/issues/19135
-                # (UNIX) Adding the rpath flag as any application could link through the library
-                # which points out a symlink, but that name does not appear in the library location
-                info["linkopts"] = [f'"-Wl,-rpath,{libdir}"' for libdir in cpp_info.libdirs]
-            return info
-
-        libs = cpp_info.libs
-        libs_info = []
-        if libs:
-            if len(libs) > 1:
-                for lib_name in libs:
-                    name = f'_{component_name}_{lib_name}' if component_name else f'_{lib_name}'
-                    virtual_cpp_info = deduced_cpp_info.components[name]
-                    libs_info.append(_lib_info(lib_name, virtual_cpp_info))
-            else:
-                lib_name = libs[0]
-                virtual_cpp_info = deduced_cpp_info.components[component_name] if component_name else deduced_cpp_info
-                libs_info.append(_lib_info(lib_name, virtual_cpp_info))
-        return libs_info
+        pass
 
     def _get_build_file_context(self):
         """
@@ -318,65 +230,14 @@ class _BazelDepBuildGenerator:
 
         :return: `_BazelTargetInfo` object with the package information
         """
-        build_content = {"components": [], "root": {}}
-        component_names = []
-        deduced_cpp_info = self._dep.cpp_info.deduce_full_cpp_info(self._dep)
-
-        if self._dep.cpp_info.has_components:
-            # Loop through all the package's components
-            for comp_ref_name, cmp_cpp_info in self._dep.cpp_info.get_sorted_components().items():
-                # At first, let's check if we have defined some components requires, e.g., "dep::cmp1"
-                comp_requires_names = self._get_component_requirement_names(cmp_cpp_info)
-                comp_name = self._get_component_name(self._dep, comp_ref_name)
-                component_names.append(comp_name)
-                build_content["components"].append({
-                    "name": comp_name,
-                    "libs": self._get_lib_info(cmp_cpp_info, deduced_cpp_info, component_name=comp_ref_name),
-                    "bindirs": self._get_bindirs(cmp_cpp_info),
-                    "headers": self._get_headers(cmp_cpp_info),
-                    "includes": self._get_includes(cmp_cpp_info),
-                    "defines": self._get_defines(cmp_cpp_info),
-                    "linkopts": self._get_linkopts(cmp_cpp_info),
-                    "copts": self._get_copts(cmp_cpp_info),
-                    "dependencies": comp_requires_names,
-                })
-
-        pkg_name = self._get_target_name(self._dep)
-        # At first, let's check if we have defined some global requires, e.g., "other::cmp1"
-        requires = self._get_component_requirement_names(self._dep.cpp_info)
-        # If we have found some component requires it would be enough
-        if not requires:
-            # If no requires were found, let's try to get all the direct dependencies,
-            # e.g., requires = "other_pkg/1.0"
-            requires = [
-                f"@{self._get_repository_name(req)}//:{self._get_target_name(req)}"
-                for req in self._transitive_reqs.values()
-            ]
-        cpp_info = self._dep.cpp_info
-        build_content["root"] = {
-            "name": pkg_name,
-            "libs": self._get_lib_info(cpp_info, deduced_cpp_info),
-            "bindirs": self._get_bindirs(cpp_info),
-            "headers": self._get_headers(cpp_info),
-            "includes": self._get_includes(cpp_info),
-            "defines": self._get_defines(cpp_info),
-            "linkopts": self._get_linkopts(cpp_info),
-            "copts": self._get_copts(cpp_info),
-            "dependencies": requires,
-            "component_names": component_names
-        }
-        return build_content
+        pass
 
     @property
     def dep_context(self):
         """
         Return the dependency context to fill later the conan_deps_module_extension.bzl and so on.
         """
-        return {
-            'repository_name': self._get_repository_name(self._dep),
-            'package_folder': self._package_folder,
-            'package_build_file_path': self._absolute_build_file_path,
-        }
+        pass
 
     def items(self):
         template = Template(self.dep_build_template, trim_blocks=True, lstrip_blocks=True,
@@ -518,19 +379,7 @@ class BazelDeps:
         """
         Simply save the activated requirements (host + build + test), and the deactivated ones
         """
-        # All the requirements
-        host_req = self._conanfile.dependencies.host
-        build_req = self._conanfile.dependencies.direct_build  # tool_requires
-        test_req = self._conanfile.dependencies.test
-
-        for require, dep in list(host_req.items()) + list(build_req.items()) + list(
-            test_req.items()):
-            # Require is not used at the moment, but its information could be used,
-            # and will be used in Conan 2.0
-            # Filter the build_requires not activated with self.build_context_activated
-            if require.build and dep.ref.name not in build_context_activated:
-                continue
-            yield require, dep
+        pass
 
     def generate(self):
         """
@@ -557,14 +406,4 @@ class BazelDeps:
             )
             use_repo(load_conan_dependencies, "dep-1", "dep-2", ...)
         """
-        check_duplicated_generator(self, self._conanfile)
-        dependencies_context = []
-        for require, dep in self._get_requirements(self.build_context_activated):
-            # Bazel info generator
-            dep_build_generator = _BazelDepBuildGenerator(self._conanfile, dep, require)
-            dependencies_context.append(dep_build_generator.dep_context)
-            for name, content in dep_build_generator.items():
-                save(name, content)
-
-        for name, content in _BazelPathsGenerator.items(dependencies_context):
-            save(name, content)
+        pass

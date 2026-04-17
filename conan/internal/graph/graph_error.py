@@ -3,7 +3,7 @@ from conan.errors import ConanException
 
 class GraphError(ConanException):
     def serialize(self):
-        return
+        pass
 
 
 class GraphConflictError(GraphError):
@@ -16,13 +16,7 @@ class GraphConflictError(GraphError):
         self.base_previous = base_previous
 
     def serialize(self):
-        dst_id = self.prev_node.id if self.prev_node else None
-        return {"type": "conflict",
-                "name": self.require.ref.name,
-                "branch1": {"src_id": self.base_previous.id, "src_ref": str(self.base_previous.ref),
-                            "dst_id": dst_id, "require": self.prev_require.serialize()},
-                "branch2": {"src_id": self.node.id, "src_ref": str(self.node.ref),
-                            "require": self.require.serialize()}}
+        pass
 
     def __str__(self):
         conflicting_node = self.node.ref or self.base_previous.ref
@@ -44,11 +38,7 @@ class GraphLoopError(GraphError):
         self.ancestor = ancestor
 
     def serialize(self):
-        return {"type": "loop",
-                "require": {**self.require.serialize(), "name": str(self.require.ref).split("/")[0]},
-                "node": self.node.serialize(),
-                "ancestor": self.ancestor.serialize()
-                }
+        pass
 
     def __str__(self):
         return "There is a cycle/loop in the graph:\n" \
@@ -65,10 +55,7 @@ class GraphMissingError(GraphError):
         self.missing_error = missing_error
 
     def serialize(self):
-        return {"type": "missing",
-                "node": {"id": self.node.id, "ref": str(self.node.ref)},
-                "require": self.require.serialize(),
-                "error": self.missing_error}
+        pass
 
     def __str__(self):
         return (f"Package '{self.require.ref}' not resolved: {self.missing_error}. "
@@ -83,11 +70,7 @@ class GraphProvidesError(GraphError):
         node.error = conflicting_node.error
 
     def serialize(self):
-        return {"type": "provide_conflict",
-                "node": {"id": self.node.id, "ref": str(self.node.ref)},
-                "conflicting_node": {"id": self.conflicting_node.id,
-                                     "ref": str(self.conflicting_node.ref)},
-                "provided": self.node.conanfile.provides or self.conflicting_node.conanfile.provides}
+        pass
 
     def __str__(self):
         provides = self.node.conanfile.provides or self.conflicting_node.conanfile.provides

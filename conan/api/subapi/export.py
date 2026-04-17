@@ -42,11 +42,7 @@ class ExportAPI:
         :param remotes: Optional, only relevant to resolve 'python-requires' in remotes
         :return: A tuple of the exported RecipeReference and a ConanFile object
         """
-        ConanOutput().title("Exporting recipe to the cache")
-        loader = self._helpers.loader
-        hook_manager = self._helpers.hook_manager
-        return cmd_export(loader,self._helpers.cache, hook_manager, self._helpers.global_conf, path,
-                          name, version, user, channel, graph_lock=lockfile, remotes=remotes)
+        pass
 
     def export_pkg_graph(self, path, ref: RecipeReference, profile_host, profile_build,
                          remotes: List[Remote], lockfile=None, is_build_require=False,
@@ -69,37 +65,7 @@ class ExportAPI:
         :param output_folder: The folder containing output files, like potential environment scripts
         :return: A Graph object that can be passed to ``export_pkg()`` method
         """
-        assert ref.revision, "ref argument must have recipe-revision defined"
-        conan_api = self._conan_api
-        deps_graph = conan_api.graph.load_graph_consumer(path,
-                                                         ref.name, str(ref.version), ref.user,
-                                                         ref.channel,
-                                                         profile_host=profile_host,
-                                                         profile_build=profile_build,
-                                                         lockfile=lockfile, remotes=remotes,
-                                                         update=None,
-                                                         is_build_require=is_build_require)
-
-        print_graph_basic(deps_graph)
-        deps_graph.report_graph_error()
-        conan_api.graph.analyze_binaries(deps_graph, build_mode=[ref.name], lockfile=lockfile,
-                                         remotes=remotes)
-        deps_graph.report_graph_error()
-
-        root_node = deps_graph.root
-        root_node.ref = ref  # Make sure the root node revision is well defined
-
-        if not skip_binaries:
-            # unless the user explicitly opts-out with --skip-binaries, it is necessary to install
-            # binaries, in case there are build_requires necessary like tool-requires=cmake
-            # and package() method doing ``cmake.install()``
-            # for most cases, deps will be in cache already because of a previous "conan install"
-            # but if it is not the case, the binaries from remotes will be downloaded
-            conan_api.install.install_binaries(deps_graph=deps_graph, remotes=remotes)
-        source_folder = os.path.dirname(path)
-        conan_api.install.install_consumer(deps_graph=deps_graph, source_folder=source_folder,
-                                           output_folder=output_folder)
-        return deps_graph
+        pass
 
     def export_pkg(self, graph, output_folder=None) -> None:
         """Executes the ``package()`` method of the exported recipe in order to copy the artifacts
@@ -109,44 +75,4 @@ class ExportAPI:
         :param output_folder: Optional folder where generated files like environment scripts
             of dependencies have been installed
         """
-        cache = PkgCache(self._conan_api.cache_folder, self._helpers.global_conf)
-        hook_manager = self._helpers.hook_manager
-
-        # The graph has to be loaded with build_mode=[ref.name], so that node is not tried
-        # to be downloaded from remotes
-        # passing here the create_reference=ref argument is useful so the recipe is in "develop",
-        # because the "package()" method is in develop=True already
-        pkg_node = graph.root
-        ref = pkg_node.ref
-        source_folder = os.path.dirname(pkg_node.path)
-        out = ConanOutput(scope=pkg_node.conanfile.display_name)
-        out.info("Exporting binary from user folder to Conan cache")
-        conanfile = pkg_node.conanfile
-
-        package_id = pkg_node.package_id
-        assert package_id is not None
-        out.info("Packaging to %s" % package_id)
-        pref = PkgReference(ref, package_id)
-        pkg_layout = cache.create_build_pkg_layout(pref)
-
-        conanfile.folders.set_base_folders(source_folder, output_folder)
-        dest_package_folder = pkg_layout.package()
-        conanfile.folders.set_base_package(dest_package_folder)
-        mkdir(pkg_layout.metadata())
-        conanfile.folders.set_base_pkg_metadata(pkg_layout.metadata())
-
-        with pkg_layout.set_dirty_context_manager():
-            prev = run_package_method(conanfile, package_id, hook_manager, ref)
-
-        pref = PkgReference(pref.ref, pref.package_id, prev)
-        pkg_layout.reference = pref
-        cache.assign_prev(pkg_layout)
-        pkg_node.prev = prev
-        pkg_node.pref_timestamp = pref.timestamp  # assigned by assign_prev
-        pkg_node.recipe = RECIPE_INCACHE
-        pkg_node.binary = BINARY_BUILD
-        # Make sure folder is updated
-        final_folder = pkg_layout.package()
-        conanfile.folders.set_base_package(final_folder)
-        out.info(f"Package folder {final_folder}")
-        out.success("Exported package binary")
+        pass

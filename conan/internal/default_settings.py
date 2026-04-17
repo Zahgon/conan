@@ -187,7 +187,4 @@ build_type: [null, Debug, Release, RelWithDebInfo, MinSizeRel]
 
 
 def migrate_settings_file(cache_folder):
-    from conan.internal.api.migrations import update_file
-
-    settings_path = os.path.join(cache_folder, "settings.yml")
-    update_file(settings_path, default_settings_yml)
+    pass

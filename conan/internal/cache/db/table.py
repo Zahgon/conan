@@ -27,41 +27,7 @@ class BaseDbTable:
 
     @contextmanager
     def db_connection(self):
-        if not self._lock.acquire(timeout=20):
-            m = "".join(traceback.format_stack()) + "\n"
-            ConanOutput().error("Error while acquiring lock for DB: " + m)
-            raise ConanException("Conan failed to acquire database lock in 20s. Maybe the system is "
-                                 "under very heavy load. Please report it to Github tickets")
-        # isolation_level=None, puts it in regular SQLITE autocommit mode, every
-        # connection.execute() will autocommit
-        connection = sqlite3.connect(self.filename, isolation_level=None, timeout=20)
-        try:
-            yield connection
-        finally:
-            connection.close()
-            self._lock.release()
+        pass
 
     def create_table(self):
-        def field(name, typename, nullable=False, unique=False):
-            field_str = name
-            if typename is str:
-                field_str += ' text'
-            elif typename is int:
-                field_str += ' integer'
-            else:
-                assert typename is float, f"sqlite3 type not mapped for type '{typename}'"
-                field_str += ' real'
-
-            if not nullable:
-                field_str += ' NOT NULL'
-
-            if unique:
-                field_str += ' UNIQUE'
-
-            return field_str
-
-        fields = ', '.join([field(*it) for it in self.columns_description])
-        guard = 'IF NOT EXISTS'
-        table_checks = f", UNIQUE({', '.join(self.unique_together)})" if self.unique_together else ''
-        with self.db_connection() as conn:
-            conn.execute(f"CREATE TABLE {guard} {self.table_name} ({fields} {table_checks});")
+        pass

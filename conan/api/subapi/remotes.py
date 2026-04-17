@@ -44,12 +44,7 @@ class RemotesAPI:
         :return: A list of :ref:`Remote <conan.api.model.Remote>` objects
 
         """
-        remotes = _load(self._remotes_file)
-        if only_enabled:
-            remotes = [r for r in remotes if not r.disabled]
-        if pattern:
-            remotes = _filter(remotes, pattern, only_enabled)
-        return remotes
+        pass
 
     def disable(self, pattern):
         """
@@ -60,15 +55,7 @@ class RemotesAPI:
         :return: the list of disabled :ref:`Remote <conan.api.model.Remote>` objects  (even if they
           were already disabled)
         """
-        remotes = _load(self._remotes_file)
-        disabled = _filter(remotes, pattern, only_enabled=False)
-        result = []
-        if disabled:
-            for r in disabled:
-                r.disabled = True
-                result.append(r)
-            _save(self._remotes_file, remotes)
-        return result
+        pass
 
     def enable(self, pattern):
         """
@@ -79,15 +66,7 @@ class RemotesAPI:
         :return: the list of enabled :ref:`Remote <conan.api.model.Remote>` objects (even if they
           were already enabled)
         """
-        remotes = _load(self._remotes_file)
-        enabled = _filter(remotes, pattern, only_enabled=False)
-        result = []
-        if enabled:
-            for r in enabled:
-                r.disabled = False
-                result.append(r)
-            _save(self._remotes_file, remotes)
-        return result
+        pass
 
     def get(self, remote_name):
         """
@@ -113,28 +92,7 @@ class RemotesAPI:
         :param index: if not defined, the new remote will be last one. Pass an integer to insert
           the remote in that position instead of the last one
         """
-        add_local_recipes_index_remote(self._home_folder, remote)
-        remotes = _load(self._remotes_file)
-        if remote.remote_type != LOCAL_RECIPES_INDEX:
-            _validate_url(remote.url)
-        current = {r.name: r for r in remotes}.get(remote.name)
-        if current:  # same name remote existing!
-            if not force:
-                raise ConanException(f"Remote '{remote.name}' already exists in remotes "
-                                     "(use --force to continue)")
-            ConanOutput().warning(f"Remote '{remote.name}' already exists in remotes")
-            if current.url != remote.url:
-                ConanOutput().warning("Updating existing remote with new url")
-
-        _check_urls(remotes, remote.url, force, current)
-        if index is None:  # append or replace in place
-            d = {r.name: r for r in remotes}
-            d[remote.name] = remote
-            remotes = list(d.values())
-        else:
-            remotes = [r for r in remotes if r.name != remote.name]
-            remotes.insert(index, remote)
-        _save(self._remotes_file, remotes)
+        pass
 
     def remove(self, pattern):
         """
@@ -144,15 +102,7 @@ class RemotesAPI:
           wildcards like "*" and no remote is found matching that exact name, it will raise an error.
         :return: The list of removed :ref:`Remote <conan.api.model.Remote>` objects
         """
-        remotes = _load(self._remotes_file)
-        removed = _filter(remotes, pattern, only_enabled=False)
-        remotes = [r for r in remotes if r not in removed]
-        _save(self._remotes_file, remotes)
-        localdb = LocalDB(self._home_folder)
-        for remote in removed:
-            remove_local_recipes_index_remote(self._home_folder, remote)
-            localdb.clean(remote_url=remote.url)
-        return removed
+        pass
 
     def update(self, remote_name: str, url=None, secure=None, disabled=None, index=None,
                allowed_packages=None, recipes_only=None):
@@ -199,25 +149,11 @@ class RemotesAPI:
         :param remote_name: The previous existing name
         :param new_name: The new name
         """
-        remotes = _load(self._remotes_file)
-        d = {r.name: r for r in remotes}
-        if new_name in d:
-            raise ConanException(f"Remote '{new_name}' already exists")
-        try:
-            d[remote_name].name = new_name
-        except KeyError:
-            raise ConanException(f"Remote '{remote_name}' doesn't exist")
-        _save(self._remotes_file, remotes)
+        pass
 
     def user_info(self, remote: Remote):
         # TODO: Review
-        localdb = LocalDB(self._home_folder)
-        user_info = {}
-        user, token, _ = localdb.get_login(remote.url)
-        user_info["name"] = remote.name
-        user_info["user_name"] = user
-        user_info["authenticated"] = True if token else False
-        return user_info
+        pass
 
     def user_login(self, remote: Remote, username: str, password: str):
         """
@@ -227,27 +163,10 @@ class RemotesAPI:
         :param username: the user login as ``str``
         :param password: password ``str``
         """
-        self._api_helpers.remote_manager.authenticate(remote, username, password)
+        pass
 
     def login(self, remotes, username=None, password=None):
-        creds = RemoteCredentials(self._conan_api.cache_folder, self._api_helpers.global_conf)
-
-        ret = OrderedDict()
-        for r in remotes:
-            previous_info = self.user_info(r)
-
-            if username is not None and password is not None:
-                user, password = username, password
-            else:
-                user, password, _ = creds.auth(r, username)
-                if username is not None and username != user:
-                    raise ConanException(f"User '{username}' doesn't match user '{user}' in "
-                                         f"credentials.json or environment variables")
-
-            self.user_login(r, user, password)
-            info = self.user_info(r)
-            ret[r.name] = {"previous_info": previous_info, "info": info}
-        return ret
+        pass
 
     def user_logout(self, remote: Remote):
         """
@@ -255,123 +174,36 @@ class RemotesAPI:
 
         :param remote: The :ref:`Remote <conan.api.model.Remote>` object to logout
         """
-        localdb = LocalDB(self._home_folder)
-        # The localdb only stores url + username + token, not remote name, so use URL as key
-        localdb.clean(remote_url=remote.url)
+        pass
 
     def user_set(self, remote: Remote, username):
         # TODO: Review
-        localdb = LocalDB(self._home_folder)
-        if username == "":
-            username = None
-        localdb.store(username, token=None, refresh_token=None, remote_url=remote.url)
+        pass
 
     def user_auth(self, remote: Remote, with_user=False, force=False):
         # TODO: Review
-        localdb = LocalDB(self._home_folder)
-        if with_user:
-            user, token, _ = localdb.get_login(remote.url)
-            if not user:
-                var_name = f"CONAN_LOGIN_USERNAME_{remote.name.replace('-', '_').upper()}"
-                user = os.getenv(var_name, None) or os.getenv("CONAN_LOGIN_USERNAME", None)
-            if not user:
-                return
-        self._api_helpers.remote_manager.check_credentials(remote, force)
-        user, token, _ = localdb.get_login(remote.url)
-        if not force and user is None:
-            remote_upper = remote.name.replace("-", "_").upper()
-            candidate_vars = [f"CONAN_LOGIN_USERNAME_{remote_upper}", "CONAN_LOGIN_USERNAME",
-                              f"CONAN_PASSWORD_{remote_upper}", "CONAN_PASSWORD"]
-            found_vars = [v for v in candidate_vars if os.getenv(v)]
-            if found_vars:
-                ConanOutput().warning(
-                    f"Remote '{remote.name}' accepted anonymous access. {', '.join(found_vars)} "
-                    f"environment variables were not used. Use '--force' to force authentication."
-                )
-        return user
+        pass
 
 
 def _load(remotes_file):
-    if not os.path.exists(remotes_file):
-        remote = Remote(CONAN_CENTER_REMOTE_NAME, "https://center2.conan.io", True, False)
-        _save(remotes_file, [remote])
-        return [remote]
-
-    try:
-        data = json.loads(load(remotes_file))
-    except Exception as e:
-        raise ConanException(f"Error loading JSON remotes file '{remotes_file}': {e}")
-    result = []
-    for r in data.get("remotes", []):
-        remote = Remote(r["name"], r["url"], r["verify_ssl"], r.get("disabled", False),
-                        r.get("allowed_packages"), r.get("remote_type"),
-                        r.get("recipes_only", False))
-        result.append(remote)
-    return result
+    pass
 
 
 def _save(remotes_file, remotes):
-    remote_list = []
-    for r in remotes:
-        remote = {"name": r.name, "url": r.url, "verify_ssl": r.verify_ssl}
-        if r.disabled:
-            remote["disabled"] = True
-        if r.allowed_packages:
-            remote["allowed_packages"] = r.allowed_packages
-        if r.remote_type:
-            remote["remote_type"] = r.remote_type
-        if r.recipes_only:
-            remote["recipes_only"] = r.recipes_only
-        remote_list.append(remote)
-    # This atomic replace avoids a corrupted remotes.json file if this is killed during the process
-    save(remotes_file + ".tmp", json.dumps({"remotes": remote_list}, indent=True))
-    os.replace(remotes_file + ".tmp", remotes_file)
+    pass
 
 
 def _filter(remotes, pattern, only_enabled=True):
-    filtered_remotes = []
-    patterns = [pattern] if isinstance(pattern, str) else pattern
-    for p in patterns:
-        is_match = False
-        for remote in remotes:
-            if fnmatch.fnmatch(remote.name, p):
-                is_match = True
-                if remote not in filtered_remotes:
-                    filtered_remotes.append(remote)
-        if not is_match:
-            if "*" in p or "?" in p:
-                if only_enabled:
-                    raise ConanException(
-                        f"Remotes for pattern '{p}' can't be found or are disabled")
-            else:
-                raise ConanException(f"Remote '{p}' can't be found or is disabled")
-    return filtered_remotes
+    pass
 
 
 def _validate_url(url):
     """ Check if URL contains protocol and address
     :param url: URL to be validated
     """
-    out = ConanOutput()
-    if url:
-        if url.startswith("https://conan.io/center"):
-            raise ConanException("Wrong ConanCenter remote URL. You are adding the web "
-                                 "https://conan.io/center the correct remote API is "
-                                 "https://center2.conan.io")
-        address = urlparse(url)
-        if not all([address.scheme, address.netloc]):
-            out.warning(f"The URL '{url}' is invalid. It must contain scheme and hostname.")
-    else:
-        out.warning("The URL is empty. It must contain scheme and hostname.")
+    pass
 
 
 def _check_urls(remotes, url, force, current):
     # The remote name doesn't exist
-    for r in remotes:
-        if r is not current and r.url == url:
-            msg = f"Remote url already existing in remote '{r.name}'. " \
-                  f"Having different remotes with same URL is not recommended."
-            if not force:
-                raise ConanException(msg + " Use '--force' to override.")
-            else:
-                ConanOutput().warning(msg + " Adding duplicated remote url because '--force'.")
+    pass

@@ -38,20 +38,7 @@ class InstallAPI:
         :param remotes: List of remotes to fetch packages from if necessary.
         :param return_install_error: If ``True``, do not raise an exception, but return it
         """
-        installer = BinaryInstaller(self._conan_api, self._helpers.global_conf,
-                                    self._helpers.hook_manager)
-        install_graph = InstallGraph(deps_graph)
-        install_graph.raise_errors()
-        install_order = install_graph.install_order()
-        installer.install_system_requires(deps_graph, install_order=install_order)
-        try:  # To be able to capture the output, report or save graph.json, then raise later
-            installer.install(deps_graph, remotes, install_order=install_order)
-        except ConanException as e:
-            # If true, allows to return the exception, so progress can be reported like the
-            # already built binaries to upload them
-            if not return_install_error:
-                raise
-            return e
+        pass
 
     def install_system_requires(self, graph, only_info=False):
         """ Install only the system requirements of a dependency graph.
@@ -66,9 +53,7 @@ class InstallAPI:
         :param graph: Dependency graph to install system requirements for
         :param only_info: If ``True``, only reporting and checking of whether the system requirements are installed is performed.
         """
-        installer = BinaryInstaller(self._conan_api, self._helpers.global_conf,
-                                    self._helpers.hook_manager)
-        installer.install_system_requires(graph, only_info)
+        pass
 
     def install_sources(self, graph, remotes: List[Remote]):
         """ Download sources in the given dependency graph.
@@ -86,9 +71,7 @@ class InstallAPI:
         :param remotes: List of remotes where the ``exports_sources`` of the packages might be located
         :param graph: Dependency graph to download sources from
         """
-        installer = BinaryInstaller(self._conan_api, self._helpers.global_conf,
-                                    self._helpers.hook_manager)
-        installer.install_sources(graph, remotes)
+        pass
 
     def install_consumer(self, deps_graph, generators: List[str] = None, source_folder=None,
                          output_folder=None, deploy=False, deploy_package: List[str] = None,
@@ -108,40 +91,7 @@ class InstallAPI:
         :param deploy_folder: Folder where to deploy, by default the build folder
         :param envs_generation: Anything other than ``None`` will activate the generation of virtual environment files for the root conanfile
         """
-        root_node = deps_graph.root
-        conanfile = root_node.conanfile
-
-        if conanfile.info is not None and conanfile.info.invalid:
-            binary, reason = "Invalid", conanfile.info.invalid
-            msg = "{}: Invalid ID: {}: {}".format(conanfile, binary, reason)
-            raise ConanInvalidConfiguration(msg)
-
-        if conanfile.info is not None and conanfile.info.cant_build and root_node.should_build:
-            binary, reason = "Cannot build for this configuration", conanfile.info.cant_build
-            msg = "{}: {}: {}".format(conanfile, binary, reason)
-            raise ConanInvalidConfiguration(msg)
-
-        conanfile.folders.set_base_folders(source_folder, output_folder)
-
-        # The previous .set_base_folders has already decided between the source_folder and output
-        if deploy or deploy_package:
-            # Issue related: https://github.com/conan-io/conan/issues/16543
-            base_folder = os.path.abspath(deploy_folder) if deploy_folder \
-                else conanfile.folders.base_build
-            do_deploys(self._conan_api.home_folder, deps_graph, deploy, deploy_package, base_folder)
-
-        final_generators = []
-        # Don't use set for uniqueness because order matters
-        for gen in conanfile.generators:
-            if gen not in final_generators:
-                final_generators.append(gen)
-        for gen in (generators or []):
-            if gen not in final_generators:
-                final_generators.append(gen)
-        conanfile.generators = final_generators
-        hook_manager = self._helpers.hook_manager
-        write_generators(conanfile, hook_manager, self._conan_api.home_folder,
-                         envs_generation=envs_generation)
+        pass
 
     def deploy(self, graph, deployer: List[str], deploy_package: List[str] = None,
                deploy_folder=None) -> None:
@@ -155,5 +105,4 @@ class InstallAPI:
         :param deploy_package: Only deploy the packages matching these patterns (``None`` or empty for all)
         :param deploy_folder: Folder where to deploy, by default the build folder
         """
-        return do_deploys(self._conan_api.home_folder, graph, deployer,
-                          deploy_package=deploy_package, deploy_folder=deploy_folder)
+        pass
